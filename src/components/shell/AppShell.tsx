@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlayerStats } from '../../types/geo';
 import { loadPlayerStats, DEFAULT_STATS } from '../../lib/storage';
-import { AuthProvider } from '../../lib/authContext';
+import { AuthProvider, useAuth } from '../../lib/authContext';
 import { AppHeader } from './AppHeader';
 import { CartographicBackground } from './CartographicBackground';
 import { ProfileModal } from '../profile/ProfileModal';
@@ -13,6 +13,7 @@ import { MasteryMapScreen } from '../mastery/MasteryMapScreen';
 import { LeaderboardScreen } from '../ranking/LeaderboardScreen';
 
 const InnerAppShell: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
   const [stats, setStats] = useState<PlayerStats>(DEFAULT_STATS);
   const [activeTab, setActiveTab] = useState<'quiz' | 'mastery' | 'ranking'>('quiz');
   const [catchUpCodes, setCatchUpCodes] = useState<string[] | null>(null);
@@ -36,6 +37,40 @@ const InnerAppShell: React.FC = () => {
     setActiveTab('quiz');
     setResetKey((prev) => prev + 1);
   };
+
+  // 1. Loading splash screen while verifying persistent session
+  if (isLoading) {
+    return (
+      <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col items-center justify-center font-sans relative select-none">
+        <CartographicBackground />
+        <div className="relative z-10 flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/70 border border-clay-border/60 backdrop-blur-md shadow-soft animate-in fade-in duration-150">
+          <div className="w-12 h-12 rounded-2xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta text-2xl font-bold animate-pulse">
+            🏛️
+          </div>
+          <div className="font-display font-black text-clay text-base tracking-wide">
+            Geo.io • Promotion L1
+          </div>
+          <div className="text-xs text-clay-muted font-medium">
+            Vérification de la session étudiante...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Mandatory Authentication Gate : access is strictly reserved to verified students
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col items-center justify-center font-sans relative select-none">
+        <CartographicBackground />
+        <AuthModal
+          isOpen={true}
+          isMandatoryGate={true}
+          onClose={() => {}}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen h-[100dvh] max-h-screen w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col selection:bg-honey-soft selection:text-clay font-sans relative select-none">

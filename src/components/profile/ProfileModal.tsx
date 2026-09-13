@@ -95,8 +95,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 {user?.pseudo || rankInfo.title}
               </h2>
 
-              <p className="text-xs text-clay-muted font-medium flex items-center gap-2 mt-0.5">
+              <p className="text-xs text-clay-muted font-medium flex flex-wrap items-center gap-2 mt-0.5">
                 <span>Niveau {rankInfo.level} • {stats.xp.toLocaleString('fr-FR')} XP</span>
+                {user?.email && (
+                  <>
+                    <span>•</span>
+                    <span className="text-clay-muted">{user.email}</span>
+                  </>
+                )}
                 {user?.university && (
                   <>
                     <span>•</span>
@@ -107,7 +113,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
           </div>
 
-          {/* Action buttons (Edit Profile / Login) */}
+          {/* Action buttons (Edit Profile / Sign out) */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -125,6 +131,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 onClick={async () => {
                   soundManager.playClick(380);
                   await signOut();
+                  onClose();
                 }}
                 className="p-2 rounded-xl bg-creme-100 hover:bg-coral-light hover:text-coral-dark text-clay-muted transition cursor-pointer"
                 title="Se déconnecter"

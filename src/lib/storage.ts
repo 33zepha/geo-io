@@ -1,6 +1,7 @@
 import { PlayerStats } from '../types/geo';
 import confetti from 'canvas-confetti';
 import { soundManager } from './audio';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 const STORAGE_KEY = 'geo_io_player_stats_v2';
 
@@ -144,12 +145,81 @@ export function addXpAndProgress(
 
   savePlayerStats(current);
 
+  // Sync with authenticated student session and Supabase Cloud
+  syncGameStatsWithCloud(current, mode, score, correctCount, questionCount);
+
   if (leveledUp) {
     soundManager.playFanfare();
     triggerCelebration();
   }
 
   return { stats: current, leveledUp, newBadges };
+}
+
+// Automatically sync student progress with persistent session & Supabase Cloud
+function syncGameStatsWithCloud(
+  stats: PlayerStats,
+  mode: string,
+  score: number,
+  correctCount: number,
+  questionCount: number
+): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const raw = localStorage.getItem('geo_io_auth_session_v2');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.isAuthenticated && parsed?.user) {
+        const masteredCount = Object.values(stats.departmentStats || {}).filter(
+          (d) => d.correct >= 1
+        ).length;
+        const accuracy = stats.totalQuestions > 0
+          ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
+          : 85;
+
+        parsed.user.xp = stats.xp;
+        parsed.user.level = stats.level;
+        parsed.user.streak = stats.streak;
+        parsed.user.masteredDeptsCount = masteredCount;
+        parsed.user.accuracy = accuracy;
+
+        localStorage.setItem('geo_io_auth_session_v2', JSON.stringify(parsed));
+        window.dispatchEvent(new CustomEvent('geo_io_profile_updated', { detail: parsed.user }));
+
+        // Async sync to Supabase Cloud if configured
+        if (isSupabaseConfigured && supabase) {
+          const client = supabase;
+          (async () => {
+            try {
+              await client
+                .from('profiles')
+                .update({
+                  xp: stats.xp,
+                  level: stats.level,
+                  streak: stats.streak,
+                  mastered_depts: masteredCount,
+                  accuracy: accuracy,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', parsed.user.id);
+
+              await client
+                .from('scores')
+                .insert({
+                  user_id: parsed.user.id,
+                  mode: mode,
+                  score: score,
+                  accuracy: questionCount > 0 ? Math.round((correctCount / questionCount) * 100) : 100,
+                });
+            } catch {}
+          })();
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Game cloud sync error:', e);
+  }
 }
 
 // Warm sunny celebration confetti (terracotta, honey, sage, cream)

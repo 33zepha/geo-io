@@ -1,9 +1,32 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#FAF7F2',
+};
+
 export const metadata: Metadata = {
-  title: 'Geo.io — Quiz de Géographie Française & Culture Territoriale',
-  description: 'Deviens incollable en géographie de la France dans un univers convivial, doux et stimulant.',
+  title: 'Geo.io — Défi de Géographie & Classement Promo L1',
+  description: 'Affronte ta promo de L1 en géographie française : 101 départements, quiz interactifs, carte de maîtrise et podium olympique 3D.',
+  applicationName: 'Geo.io',
+  keywords: ['géographie', 'france', 'quiz', 'départements', 'étudiants', 'L1', 'classement', 'podium'],
+  authors: [{ name: 'Geo.io University Team' }],
+  openGraph: {
+    title: 'Geo.io — Défi de Géographie & Classement Promo L1',
+    description: 'Rejoins le défi cartographique de ta promo : 101 départements, quiz de culture territoriale et podium olympique 3D.',
+    type: 'website',
+    locale: 'fr_FR',
+    siteName: 'Geo.io',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Geo.io — Défi de Géographie & Classement Promo L1',
+    description: 'Rejoins le défi cartographique de ta promo : 101 départements, quiz de culture territoriale et podium olympique 3D.',
+  },
 };
 
 export default function RootLayout({

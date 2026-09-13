@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../lib/authContext';
-import { getLeaderboardEntries } from '../../lib/rankingService';
-import { RankingCategory, RankingPeriod } from '../../types/ranking';
+import { getLeaderboardEntries, fetchLiveLeaderboardEntries } from '../../lib/rankingService';
+import { RankingCategory, RankingPeriod, LeaderboardEntry } from '../../types/ranking';
 import { PodiumShowcase } from './PodiumShowcase';
 import { getAvatarById } from '../../data/avatars';
 import { soundManager } from '../../lib/audio';
-import { Trophy, Calendar, Search, MapPin, Sparkles, ArrowRight, Compass } from 'lucide-react';
+import { Trophy, Calendar, Search, MapPin, Sparkles, ArrowRight, Compass, RefreshCw } from 'lucide-react';
 
 interface LeaderboardScreenProps {
   onStartGame?: () => void;
@@ -18,11 +18,33 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onStartGam
   const [period, setPeriod] = useState<RankingPeriod>('all_time');
   const [category, setCategory] = useState<RankingCategory>('composite');
   const [search, setSearch] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { top3, rest, userEntry } = useMemo(() => {
-    return getLeaderboardEntries(user, period, category, search);
+  // Initial local state for immediate render
+  const [data, setData] = useState<{
+    entries: LeaderboardEntry[];
+    top3: LeaderboardEntry[];
+    rest: LeaderboardEntry[];
+    userEntry: LeaderboardEntry | null;
+  }>(() => getLeaderboardEntries(user, period, category, search));
+
+  const loadData = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const live = await fetchLiveLeaderboardEntries(user, period, category, search);
+      setData(live);
+    } catch (e) {
+      console.warn('Leaderboard refresh error:', e);
+    } finally {
+      setIsRefreshing(false);
+    }
   }, [user, period, category, search]);
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const { top3, rest, userEntry } = data;
   const userAvatar = user ? getAvatarById(user.avatarId) : null;
 
   return (
@@ -40,16 +62,29 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onStartGam
             </h1>
           </div>
 
-          {/* Search bar */}
-          <div className="relative w-full sm:w-56">
-            <Search className="w-3.5 h-3.5 text-clay-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Chercher un étudiant ou une fac..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white border border-clay-border text-xs font-medium text-clay placeholder:text-clay-subtle focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-            />
+          {/* Search bar & Refresh */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-56">
+              <Search className="w-3.5 h-3.5 text-clay-subtle absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Chercher un étudiant ou une fac..."
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white border border-clay-border text-xs font-medium text-clay placeholder:text-clay-subtle focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+              />
+            </div>
+            <button
+              onClick={() => {
+                soundManager.playClick(500);
+                loadData();
+              }}
+              disabled={isRefreshing}
+              className="p-2 rounded-xl bg-white hover:bg-creme-100 border border-clay-border text-clay-muted hover:text-clay transition cursor-pointer shadow-2xs shrink-0"
+              title="Actualiser le classement en direct"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-terracotta' : ''}`} />
+            </button>
           </div>
         </div>
 

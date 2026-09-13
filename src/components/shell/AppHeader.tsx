@@ -34,6 +34,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   useEffect(() => {
     setSoundEnabled(soundManager.isEnabled());
+    const onProfileUpdate = () => {
+      // Re-trigger re-render
+    };
+    window.addEventListener('geo_io_profile_updated', onProfileUpdate);
+    return () => window.removeEventListener('geo_io_profile_updated', onProfileUpdate);
   }, []);
 
   const toggleSound = () => {
@@ -45,14 +50,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-clay-border/70 bg-white/90 backdrop-blur-md shrink-0">
-      <div className="max-w-5xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-5xl mx-auto px-2 sm:px-6 h-14 flex items-center justify-between gap-1.5 sm:gap-4">
         {/* Brand & Logo */}
         <button
           onClick={() => {
             soundManager.playClick(400);
             onResetToHome();
           }}
-          className="flex items-center gap-2 text-left cursor-pointer group shrink-0"
+          className="flex items-center gap-1.5 sm:gap-2 text-left cursor-pointer group shrink-0"
         >
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta group-hover:bg-terracotta group-hover:text-white transition-colors duration-150">
             <Compass className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -65,21 +70,21 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </button>
 
         {/* Center Navigation Tabs */}
-        <div className="flex items-center p-1 bg-creme-100/90 rounded-xl border border-clay-border/80 text-xs font-semibold">
+        <div className="flex items-center p-0.5 sm:p-1 bg-creme-100/90 rounded-xl border border-clay-border/80 text-xs font-semibold">
           <button
             onClick={() => {
               soundManager.playClick(440);
               onTabChange('quiz');
             }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
               activeTab === 'quiz'
                 ? 'bg-white text-clay shadow-xs font-bold border border-clay-border/40'
                 : 'text-clay-muted hover:text-clay'
             }`}
           >
-            <Compass className="w-3.5 h-3.5 text-terracotta" />
+            <Compass className="w-3.5 h-3.5 text-terracotta shrink-0" />
             <span className="hidden sm:inline">Quiz & Défis</span>
-            <span className="sm:hidden">Quiz</span>
+            <span className="sm:hidden text-[11px]">Quiz</span>
           </button>
 
           <button
@@ -87,17 +92,17 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(460);
               onTabChange('mastery');
             }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
               activeTab === 'mastery'
                 ? 'bg-white text-clay shadow-xs font-bold border border-clay-border/40'
                 : 'text-clay-muted hover:text-clay'
             }`}
           >
-            <Map className="w-3.5 h-3.5 text-sage-dark" />
+            <Map className="w-3.5 h-3.5 text-sage-dark shrink-0" />
             <span className="hidden sm:inline">Carte de Maîtrise</span>
-            <span className="sm:hidden">Maîtrise</span>
+            <span className="sm:hidden text-[11px]">Carte</span>
             {masteredCount > 0 && (
-              <span className="ml-0.5 text-[10px] px-1.5 py-0.2 rounded-full bg-sage-light text-sage-dark font-bold hidden xs:inline">
+              <span className="ml-0.5 text-[10px] px-1 py-0.2 rounded-full bg-sage-light text-sage-dark font-bold hidden xs:inline">
                 {masteredCount}
               </span>
             )}
@@ -108,27 +113,27 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(470);
               onTabChange('ranking');
             }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
               activeTab === 'ranking'
                 ? 'bg-white text-clay shadow-xs font-bold border border-clay-border/40'
                 : 'text-clay-muted hover:text-clay'
             }`}
           >
-            <Trophy className="w-3.5 h-3.5 text-amber-500" />
+            <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span className="hidden sm:inline">Classement L1</span>
-            <span className="sm:hidden">Podium</span>
+            <span className="sm:hidden text-[11px]">Podium</span>
           </button>
         </div>
 
         {/* Right Section: Streak, Level, Sound & Profile */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 text-xs font-medium shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 text-xs font-medium shrink-0">
           {/* Daily Streak */}
           <div
-            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-honey-light border border-honey/30 text-honey-dark font-bold cursor-default"
+            className="hidden xs:flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-honey-light border border-honey/30 text-honey-dark font-bold cursor-default"
             title={`${stats.streak} jour(s) de suite`}
           >
             <Flame className="w-3.5 h-3.5 fill-honey text-honey" />
-            <span>{stats.streak} j</span>
+            <span className="text-[11px] sm:text-xs">{stats.streak} j</span>
           </div>
 
           {/* Sound Toggle */}

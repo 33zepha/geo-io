@@ -17,7 +17,6 @@ export interface AuthSession {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isGuest: boolean;
 }
 
 export interface AvatarItem {

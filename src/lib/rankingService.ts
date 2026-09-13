@@ -1,5 +1,6 @@
 import { LeaderboardEntry, RankingCategory, RankingPeriod } from '../types/ranking';
 import { UserProfile } from '../types/auth';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 export function calculateExcellenceScore(
   xp: number,
@@ -277,6 +278,135 @@ export function getLeaderboardEntries(
   }));
 
   // Filter if searchQuery
+  const filtered = searchQuery
+    ? ranked.filter(
+        (e) =>
+          e.user.pseudo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (e.user.university &&
+            e.user.university.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : ranked;
+
+  const top3 = filtered.slice(0, 3);
+  const rest = filtered.slice(3);
+  const userEntry = currentUser
+    ? ranked.find((e) => e.user.id === currentUser.id) || null
+    : null;
+
+  return {
+    entries: filtered,
+    top3,
+    rest,
+    userEntry,
+  };
+}
+
+/**
+ * Charge le classement dynamique depuis Supabase avec synchronisation des vrais étudiants de la promo
+ */
+export async function fetchLiveLeaderboardEntries(
+  currentUser: UserProfile | null,
+  period: RankingPeriod = 'all_time',
+  category: RankingCategory = 'composite',
+  searchQuery = ''
+): Promise<{
+  entries: LeaderboardEntry[];
+  top3: LeaderboardEntry[];
+  rest: LeaderboardEntry[];
+  userEntry: LeaderboardEntry | null;
+}> {
+  let pool: Omit<LeaderboardEntry, 'rank'>[] = [];
+
+  // 1. Récupération des profils réels Supabase
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('xp', { ascending: false })
+        .limit(50);
+
+      if (!error && profiles && profiles.length > 0) {
+        pool = profiles.map((p) => {
+          const user: UserProfile = {
+            id: p.id,
+            pseudo: p.pseudo || 'Étudiant',
+            avatarId: p.avatar_id || 'boussole',
+            favoriteDept: p.favorite_dept || '75',
+            university: p.university || '',
+            level: p.level || 1,
+            xp: p.xp || 0,
+            streak: p.streak || 1,
+            masteredDeptsCount: p.mastered_depts || 0,
+            accuracy: p.accuracy || 85,
+            createdAt: p.created_at || new Date().toISOString(),
+          };
+          const excellence = calculateExcellenceScore(user.xp, user.masteredDeptsCount, user.accuracy);
+          return {
+            user,
+            excellenceScore: excellence,
+            totalXp: user.xp,
+            weeklyXp: Math.round(user.xp * 0.45),
+            masteredCount: user.masteredDeptsCount,
+            accuracy: user.accuracy,
+            pointageHighScore: Math.round(user.xp * 0.35),
+          };
+        });
+      }
+    } catch (e) {
+      console.warn('Live leaderboard fetch notice:', e);
+    }
+  }
+
+  // 2. Si moins de 8 étudiants réels sont inscrits, compléter avec des étudiants benchmarks pour le podium
+  if (pool.length < 8) {
+    const existingIds = new Set(pool.map((p) => p.user.id));
+    for (const seed of SEED_STUDENTS) {
+      if (!existingIds.has(seed.user.id)) {
+        pool.push(seed);
+      }
+    }
+  }
+
+  // 3. Injecter ou mettre à jour l'étudiant connecté avec son XP le plus frais
+  if (currentUser) {
+    const userExcellence = calculateExcellenceScore(
+      currentUser.xp,
+      currentUser.masteredDeptsCount,
+      currentUser.accuracy || 85
+    );
+    const userEntryData = {
+      user: currentUser,
+      excellenceScore: userExcellence,
+      totalXp: currentUser.xp,
+      weeklyXp: Math.round(currentUser.xp * 0.45),
+      masteredCount: currentUser.masteredDeptsCount,
+      accuracy: currentUser.accuracy || 85,
+      pointageHighScore: Math.round(currentUser.xp * 0.35),
+    };
+
+    const existingIdx = pool.findIndex((p) => p.user.id === currentUser.id);
+    if (existingIdx >= 0) {
+      pool[existingIdx] = userEntryData;
+    } else {
+      pool.push(userEntryData);
+    }
+  }
+
+  // 4. Tri selon la catégorie et période
+  pool.sort((a, b) => {
+    if (category === 'pointage') return b.pointageHighScore - a.pointageHighScore;
+    if (category === 'mastery') return b.masteredCount - a.masteredCount;
+    if (period === 'weekly') return b.weeklyXp - a.weeklyXp;
+    return b.excellenceScore - a.excellenceScore;
+  });
+
+  // 5. Attribution des rangs
+  const ranked: LeaderboardEntry[] = pool.map((item, idx) => ({
+    ...item,
+    rank: idx + 1,
+  }));
+
   const filtered = searchQuery
     ? ranked.filter(
         (e) =>
