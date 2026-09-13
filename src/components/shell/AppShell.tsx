@@ -129,7 +129,7 @@ const InnerAppShell: React.FC = () => {
         }}
       />
 
-      {/* Auth Modal (Email, Google, Apple, Guest) */}
+      {/* Auth Modal (email and password) */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

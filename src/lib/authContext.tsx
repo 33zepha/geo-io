@@ -1,16 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { UserProfile, AuthSession } from '../types/auth';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { loadPlayerStats } from './storage';
 
 export const LOCAL_AUTH_SESSION_KEY = 'geo_io_auth_session_v2';
-export const PENDING_OTP_KEY = 'geo_io_pending_otp_v2';
 
 interface AuthContextType extends AuthSession {
-  sendEmailOtp: (email: string, pseudo?: string) => Promise<{ error: string | null; devCode?: string }>;
-  verifyEmailOtp: (email: string, code: string) => Promise<{ error: string | null }>;
+  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUpWithEmail: (email: string, password: string, pseudo: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }
@@ -20,19 +20,16 @@ const AuthContext = createContext<AuthContextType | null>(null);
 function generateDefaultProfile(email: string, pseudo?: string): UserProfile {
   const stats = loadPlayerStats();
   const masteredCount = Object.values(stats.departmentStats || {}).filter(
-    (d) => d.attempts >= 1 && d.correct >= 1
+    (department) => department.attempts >= 1 && department.correct >= 1
   ).length;
-
   const accuracy = stats.totalQuestions > 0
     ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
     : 85;
 
-  const resolvedPseudo = (pseudo && pseudo.trim()) || email.split('@')[0] || 'Étudiant_L1';
-
   return {
-    id: 'user_' + Math.random().toString(36).substring(2, 10),
+    id: '',
     email: email.trim().toLowerCase(),
-    pseudo: resolvedPseudo,
+    pseudo: pseudo?.trim() || email.split('@')[0] || 'Étudiant_L1',
     avatarId: 'boussole',
     favoriteDept: '75',
     university: 'Paris 1 Panthéon-Sorbonne',
@@ -45,399 +42,244 @@ function generateDefaultProfile(email: string, pseudo?: string): UserProfile {
   };
 }
 
+function profileFromRow(row: Record<string, any>, authUser: User): UserProfile {
+  const email = authUser.email || '';
+  return {
+    id: row.id,
+    email,
+    pseudo: row.pseudo || authUser.user_metadata?.pseudo || email.split('@')[0],
+    avatarId: row.avatar_id || 'boussole',
+    favoriteDept: row.favorite_dept || '75',
+    university: row.university || '',
+    level: row.level || 1,
+    xp: row.xp || 0,
+    streak: row.streak || 1,
+    masteredDeptsCount: row.mastered_depts || 0,
+    accuracy: row.accuracy || 85,
+    createdAt: row.created_at || new Date().toISOString(),
+  };
+}
+
+async function loadAuthenticatedProfile(authUser: User): Promise<UserProfile> {
+  if (!supabase || !authUser.email) throw new Error('Session Supabase invalide.');
+
+  const { data: profileRow, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', authUser.id)
+    .maybeSingle();
+
+  if (profileError) throw profileError;
+  if (profileRow) return profileFromRow(profileRow, authUser);
+
+  const profile = generateDefaultProfile(authUser.email, authUser.user_metadata?.pseudo);
+  profile.id = authUser.id;
+  const { error: insertError } = await supabase.from('profiles').upsert({
+    id: profile.id,
+    pseudo: profile.pseudo,
+    avatar_id: profile.avatarId,
+    favorite_dept: profile.favoriteDept,
+    university: profile.university,
+    level: profile.level,
+    xp: profile.xp,
+    streak: profile.streak,
+    mastered_depts: profile.masteredDeptsCount,
+    accuracy: profile.accuracy,
+  }, { onConflict: 'id' });
+
+  if (insertError) throw insertError;
+  return profile;
+}
+
+function authErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error || '');
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('invalid login credentials')) {
+    return 'Adresse email ou mot de passe incorrect.';
+  }
+  if (normalized.includes('user already registered')) {
+    return 'Un compte existe déjà avec cette adresse email.';
+  }
+  if (normalized.includes('password') && normalized.includes('characters')) {
+    return 'Le mot de passe doit contenir au moins 6 caractères.';
+  }
+  if (normalized.includes('email not confirmed')) {
+    return "La confirmation email est encore activée dans Supabase. Désactivez-la pour autoriser la connexion immédiate.";
+  }
+  if (normalized.includes('fetch') || normalized.includes('network')) {
+    return 'Impossible de contacter le service de connexion. Vérifiez votre réseau.';
+  }
+
+  return message || 'Une erreur de connexion est survenue.';
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize session and restore persistence
-  useEffect(() => {
-    let isMounted = true;
-
-    async function initAuth() {
-      // 1. Check if Supabase session is active
-      if (isSupabaseConfigured && supabase) {
-        try {
-          const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
-          if (!sessionErr && session?.user?.email) {
-            const userId = session.user.id;
-            const userEmail = session.user.email;
-
-            // Retrieve profile from PostgreSQL 'profiles'
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', userId)
-              .maybeSingle();
-
-            let activeProfile: UserProfile;
-            if (profileData) {
-              activeProfile = {
-                id: profileData.id,
-                email: userEmail,
-                pseudo: profileData.pseudo || session.user.user_metadata?.pseudo || userEmail.split('@')[0],
-                avatarId: profileData.avatar_id || 'boussole',
-                favoriteDept: profileData.favorite_dept || '75',
-                university: profileData.university || '',
-                level: profileData.level || 1,
-                xp: profileData.xp || 0,
-                streak: profileData.streak || 1,
-                masteredDeptsCount: profileData.mastered_depts || 0,
-                accuracy: profileData.accuracy || 85,
-                createdAt: profileData.created_at || new Date().toISOString(),
-              };
-            } else {
-              // Create profile in Supabase table
-              activeProfile = generateDefaultProfile(
-                userEmail,
-                session.user.user_metadata?.pseudo
-              );
-              activeProfile.id = userId;
-
-              try {
-                await supabase.from('profiles').upsert({
-                  id: userId,
-                  pseudo: activeProfile.pseudo,
-                  avatar_id: activeProfile.avatarId,
-                  favorite_dept: activeProfile.favoriteDept,
-                  university: activeProfile.university,
-                  level: activeProfile.level,
-                  xp: activeProfile.xp,
-                  streak: activeProfile.streak,
-                  mastered_depts: activeProfile.masteredDeptsCount,
-                  accuracy: activeProfile.accuracy,
-                }, { onConflict: 'id' });
-              } catch {}
-            }
-
-            if (isMounted) {
-              setUser(activeProfile);
-              setIsAuthenticated(true);
-              localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({
-                isAuthenticated: true,
-                user: activeProfile,
-              }));
-              setIsLoading(false);
-            }
-            return;
-          }
-        } catch (e) {
-          console.warn('Supabase session verification notice:', e);
-        }
-      }
-
-      // 2. Check persistent local storage session
-      try {
-        const saved = localStorage.getItem(LOCAL_AUTH_SESSION_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed?.isAuthenticated && parsed?.user?.email) {
-            // Re-sync local game stats to avoid stale XP
-            const stats = loadPlayerStats();
-            parsed.user.xp = Math.max(parsed.user.xp || 0, stats.xp || 0);
-            parsed.user.level = Math.max(parsed.user.level || 1, stats.level || 1);
-            parsed.user.streak = Math.max(parsed.user.streak || 1, stats.streak || 1);
-
-            if (isMounted) {
-              setUser(parsed.user);
-              setIsAuthenticated(true);
-              setIsLoading(false);
-            }
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('Local session read error:', e);
-      }
-
-      // 3. Not authenticated -> require connection
-      if (isMounted) {
-        setUser(null);
-        setIsAuthenticated(false);
-        setIsLoading(false);
-      }
-    }
-
-    initAuth();
-
-    // Supabase auth event listener
-    let unsubscribe: (() => void) | undefined;
-    if (isSupabaseConfigured && supabase) {
-      const client = supabase;
-      const { data: authListener } = client.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          if (isMounted) {
-            setUser(null);
-            setIsAuthenticated(false);
-            localStorage.removeItem(LOCAL_AUTH_SESSION_KEY);
-          }
-        } else if (session?.user?.email) {
-          const userEmail = session.user.email;
-          const { data: profileData } = await client
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          const activeProfile = profileData ? {
-            id: profileData.id,
-            email: userEmail,
-            pseudo: profileData.pseudo || session.user.user_metadata?.pseudo || userEmail.split('@')[0],
-            avatarId: profileData.avatar_id || 'boussole',
-            favoriteDept: profileData.favorite_dept || '75',
-            university: profileData.university || '',
-            level: profileData.level || 1,
-            xp: profileData.xp || 0,
-            streak: profileData.streak || 1,
-            masteredDeptsCount: profileData.mastered_depts || 0,
-            accuracy: profileData.accuracy || 85,
-            createdAt: profileData.created_at || new Date().toISOString(),
-          } : generateDefaultProfile(userEmail, session.user.user_metadata?.pseudo);
-
-          if (isMounted) {
-            setUser(activeProfile);
-            setIsAuthenticated(true);
-            localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({
-              isAuthenticated: true,
-              user: activeProfile,
-            }));
-          }
-        }
-      });
-      unsubscribe = () => authListener.subscription.unsubscribe();
-    }
-
-    return () => {
-      isMounted = false;
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
-
-  /**
-   * Envoyer un code de vérification par email (OTP)
-   */
-  const sendEmailOtp = async (email: string, pseudo?: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
-      return { error: 'Veuillez saisir une adresse email valide.' };
-    }
-
-    // A. Supabase Cloud OTP
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-          options: {
-            shouldCreateUser: true,
-            data: {
-              pseudo: pseudo?.trim() || cleanEmail.split('@')[0],
-            },
-          },
-        });
-
-        if (error) return { error: error.message };
-
-        // Store pending in session
-        sessionStorage.setItem(PENDING_OTP_KEY, JSON.stringify({
-          email: cleanEmail,
-          pseudo: pseudo?.trim() || cleanEmail.split('@')[0],
-          sentAt: Date.now(),
-        }));
-
-        return { error: null };
-      } catch (err: any) {
-        return { error: err?.message || "Échec de l'envoi du code Supabase." };
-      }
-    }
-
-    if (process.env.NODE_ENV !== 'development') {
-      return { error: 'Le service de connexion est indisponible. Veuillez réessayer plus tard.' };
-    }
-
-    // B. Local development OTP generator
-    const devCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const pendingData = {
-      email: cleanEmail,
-      pseudo: pseudo?.trim() || cleanEmail.split('@')[0],
-      code: devCode,
-      expiresAt: Date.now() + 15 * 60 * 1000,
-    };
-
-    sessionStorage.setItem(PENDING_OTP_KEY, JSON.stringify(pendingData));
-    return { error: null, devCode };
-  };
-
-  /**
-   * Valider le code de vérification à 6 chiffres
-   */
-  const verifyEmailOtp = async (email: string, code: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanCode = code.trim().replace(/\s+/g, '');
-
-    if (!cleanCode || cleanCode.length < 6) {
-      return { error: 'Veuillez saisir un code à 6 chiffres.' };
-    }
-
-    // A. Supabase Cloud OTP verification
-    if (isSupabaseConfigured && supabase) {
-      try {
-        const { data, error } = await supabase.auth.verifyOtp({
-          email: cleanEmail,
-          token: cleanCode,
-          type: 'email',
-        });
-
-        if (error) return { error: error.message };
-
-        if (data?.user) {
-          const rawPending = sessionStorage.getItem(PENDING_OTP_KEY);
-          let requestedPseudo = cleanEmail.split('@')[0];
-          if (rawPending) {
-            try {
-              const parsed = JSON.parse(rawPending);
-              if (parsed.pseudo) requestedPseudo = parsed.pseudo;
-            } catch {}
-          }
-
-          // Fetch or upsert profile
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .maybeSingle();
-
-          let activeProfile: UserProfile;
-          if (profileData) {
-            activeProfile = {
-              id: profileData.id,
-              email: cleanEmail,
-              pseudo: profileData.pseudo || requestedPseudo,
-              avatarId: profileData.avatar_id || 'boussole',
-              favoriteDept: profileData.favorite_dept || '75',
-              university: profileData.university || 'Université',
-              level: profileData.level || 1,
-              xp: profileData.xp || 0,
-              streak: profileData.streak || 1,
-              masteredDeptsCount: profileData.mastered_depts || 0,
-              accuracy: profileData.accuracy || 85,
-              createdAt: profileData.created_at || new Date().toISOString(),
-            };
-          } else {
-            activeProfile = generateDefaultProfile(cleanEmail, requestedPseudo);
-            activeProfile.id = data.user.id;
-            try {
-              await supabase.from('profiles').upsert({
-                id: data.user.id,
-                pseudo: activeProfile.pseudo,
-                avatar_id: activeProfile.avatarId,
-                favorite_dept: activeProfile.favoriteDept,
-                university: activeProfile.university,
-                level: activeProfile.level,
-                xp: activeProfile.xp,
-                streak: activeProfile.streak,
-                mastered_depts: activeProfile.masteredDeptsCount,
-                accuracy: activeProfile.accuracy,
-              }, { onConflict: 'id' });
-            } catch {}
-          }
-
-          setUser(activeProfile);
-          setIsAuthenticated(true);
-          localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({
-            isAuthenticated: true,
-            user: activeProfile,
-          }));
-          sessionStorage.removeItem(PENDING_OTP_KEY);
-          return { error: null };
-        }
-
-        return { error: 'Aucun utilisateur retourné par la vérification.' };
-      } catch (err: any) {
-        return { error: err?.message || 'Erreur lors de la validation du code.' };
-      }
-    }
-
-    if (process.env.NODE_ENV !== 'development') {
-      return { error: 'Le service de connexion est indisponible. Veuillez réessayer plus tard.' };
-    }
-
-    // B. Local development OTP verification
-    const rawPending = sessionStorage.getItem(PENDING_OTP_KEY);
-    let isValid = false;
-    let registeredPseudo = cleanEmail.split('@')[0];
-
-    if (rawPending) {
-      try {
-        const pending = JSON.parse(rawPending);
-        if (pending.email === cleanEmail && pending.code === cleanCode && Date.now() < pending.expiresAt) {
-          isValid = true;
-          if (pending.pseudo) registeredPseudo = pending.pseudo;
-        }
-      } catch {}
-    }
-
-    if (!isValid) {
-      return { error: 'Code incorrect ou expiré. Veuillez vérifier les 6 chiffres reçus.' };
-    }
-
-    // Persist new verified student profile
-    const profile = generateDefaultProfile(cleanEmail, registeredPseudo);
+  const applyAuthenticatedProfile = (profile: UserProfile) => {
     setUser(profile);
     setIsAuthenticated(true);
     localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({
       isAuthenticated: true,
       user: profile,
     }));
-    sessionStorage.removeItem(PENDING_OTP_KEY);
-
-    return { error: null };
   };
 
-  /**
-   * Déconnexion sécurisée
-   */
-  const signOut = async () => {
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.auth.signOut();
-      } catch (e) {
-        console.warn('Supabase sign out error:', e);
-      }
-    }
-
+  const clearAuthenticatedProfile = () => {
     localStorage.removeItem(LOCAL_AUTH_SESSION_KEY);
-    sessionStorage.removeItem(PENDING_OTP_KEY);
     setUser(null);
     setIsAuthenticated(false);
   };
 
-  /**
-   * Mise à jour du profil (pseudo, avatar, département, université)
-   */
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user) return;
-    const updated: UserProfile = { ...user, ...updates };
-    setUser(updated);
-    localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({
-      isAuthenticated: true,
-      user: updated,
-    }));
+  useEffect(() => {
+    let isMounted = true;
 
-    if (isSupabaseConfigured && supabase) {
+    async function initializeAuth() {
+      if (!isSupabaseConfigured || !supabase) {
+        if (isMounted) clearAuthenticatedProfile();
+        if (isMounted) setIsLoading(false);
+        return;
+      }
+
       try {
-        await supabase
-          .from('profiles')
-          .update({
-            pseudo: updated.pseudo,
-            avatar_id: updated.avatarId,
-            favorite_dept: updated.favoriteDept,
-            university: updated.university,
-          })
-          .eq('id', user.id);
-      } catch (e) {
-        console.warn('Could not sync profile update to Supabase:', e);
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data.user?.email) {
+          if (isMounted) clearAuthenticatedProfile();
+          return;
+        }
+
+        const profile = await loadAuthenticatedProfile(data.user);
+        if (isMounted) applyAuthenticatedProfile(profile);
+      } catch (error) {
+        console.warn('Supabase session verification failed:', error);
+        if (isMounted) clearAuthenticatedProfile();
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     }
+
+    void initializeAuth();
+
+    const authListener = supabase?.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session?.user?.email) {
+        if (event === 'SIGNED_OUT' && isMounted) clearAuthenticatedProfile();
+        return;
+      }
+
+      window.setTimeout(() => {
+        void loadAuthenticatedProfile(session.user)
+          .then((profile) => {
+            if (isMounted) applyAuthenticatedProfile(profile);
+          })
+          .catch((error) => {
+            console.warn('Supabase profile refresh failed:', error);
+          });
+      }, 0);
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.data.subscription.unsubscribe();
+    };
+  }, []);
+
+  const signInWithEmail = async (email: string, password: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { error: 'Veuillez saisir une adresse email valide.' };
+    }
+    if (password.length < 6) {
+      return { error: 'Le mot de passe doit contenir au moins 6 caractères.' };
+    }
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: "Le service de connexion Supabase n'est pas configuré." };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+      if (error) return { error: authErrorMessage(error) };
+      if (!data.user?.email || !data.session) {
+        return { error: 'Supabase n’a pas retourné de session valide.' };
+      }
+
+      const profile = await loadAuthenticatedProfile(data.user);
+      applyAuthenticatedProfile(profile);
+      return { error: null };
+    } catch (error) {
+      return { error: authErrorMessage(error) };
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string, pseudo: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPseudo = pseudo.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { error: 'Veuillez saisir une adresse email valide.' };
+    }
+    if (!cleanPseudo) {
+      return { error: 'Veuillez choisir un pseudo pour le classement.' };
+    }
+    if (password.length < 6) {
+      return { error: 'Le mot de passe doit contenir au moins 6 caractères.' };
+    }
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: "Le service de connexion Supabase n'est pas configuré." };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: { data: { pseudo: cleanPseudo } },
+      });
+      if (error) return { error: authErrorMessage(error) };
+      if (!data.user?.email || !data.session) {
+        return {
+          error: "Le compte a été créé sans session. Désactivez « Confirm email » dans Supabase, puis réessayez.",
+        };
+      }
+
+      const profile = await loadAuthenticatedProfile(data.user);
+      applyAuthenticatedProfile(profile);
+      return { error: null };
+    } catch (error) {
+      return { error: authErrorMessage(error) };
+    }
+  };
+
+  const signOut = async () => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.warn('Supabase sign out failed:', error);
+      }
+    }
+    clearAuthenticatedProfile();
+  };
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user || !isAuthenticated || !supabase) return;
+
+    const updated: UserProfile = { ...user, ...updates };
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        pseudo: updated.pseudo,
+        avatar_id: updated.avatarId,
+        favorite_dept: updated.favoriteDept,
+        university: updated.university,
+      })
+      .eq('id', user.id);
+
+    if (error) throw error;
+    applyAuthenticatedProfile(updated);
   };
 
   return (
@@ -446,8 +288,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated,
         isLoading,
-        sendEmailOtp,
-        verifyEmailOtp,
+        signInWithEmail,
+        signUpWithEmail,
         signOut,
         updateProfile,
       }}
@@ -458,7 +300,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  return context;
 }
