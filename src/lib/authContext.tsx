@@ -235,22 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
 
-        if (error) {
-          const msg = (error.message || '').toLowerCase();
-          // Fail-safe si la limite d'emails gratuits Supabase (3/heure) est atteinte
-          if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit') || (error as any).status === 429) {
-            const emergencyCode = Math.floor(100000 + Math.random() * 900000).toString();
-            sessionStorage.setItem(PENDING_OTP_KEY, JSON.stringify({
-              email: cleanEmail,
-              pseudo: pseudo?.trim() || cleanEmail.split('@')[0],
-              code: emergencyCode,
-              expiresAt: Date.now() + 15 * 60 * 1000,
-              isEmergency: true,
-            }));
-            return { error: null, devCode: emergencyCode };
-          }
-          return { error: error.message };
-        }
+        if (error) return { error: error.message };
 
         // Store pending in session
         sessionStorage.setItem(PENDING_OTP_KEY, JSON.stringify({
@@ -265,7 +250,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // B. Local Mirror / Dev OTP generator (Zero-config fail-safe)
+    if (process.env.NODE_ENV !== 'development') {
+      return { error: 'Le service de connexion est indisponible. Veuillez réessayer plus tard.' };
+    }
+
+    // B. Local development OTP generator
     const devCode = Math.floor(100000 + Math.random() * 900000).toString();
     const pendingData = {
       email: cleanEmail,
@@ -298,27 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           type: 'email',
         });
 
-        if (error) {
-          // Secours d'urgence en cas de limite email
-          const rawPending = sessionStorage.getItem(PENDING_OTP_KEY);
-          if (rawPending) {
-            try {
-              const pending = JSON.parse(rawPending);
-              if (pending.isEmergency && pending.email === cleanEmail && pending.code === cleanCode) {
-                const profile = generateDefaultProfile(cleanEmail, pending.pseudo);
-                setUser(profile);
-                setIsAuthenticated(true);
-                localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({
-                  isAuthenticated: true,
-                  user: profile,
-                }));
-                sessionStorage.removeItem(PENDING_OTP_KEY);
-                return { error: null };
-              }
-            } catch {}
-          }
-          return { error: error.message };
-        }
+        if (error) return { error: error.message };
 
         if (data?.user) {
           const rawPending = sessionStorage.getItem(PENDING_OTP_KEY);
@@ -388,7 +357,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    // B. Local Mirror / Dev OTP verification
+    if (process.env.NODE_ENV !== 'development') {
+      return { error: 'Le service de connexion est indisponible. Veuillez réessayer plus tard.' };
+    }
+
+    // B. Local development OTP verification
     const rawPending = sessionStorage.getItem(PENDING_OTP_KEY);
     let isValid = false;
     let registeredPseudo = cleanEmail.split('@')[0];
@@ -401,11 +374,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (pending.pseudo) registeredPseudo = pending.pseudo;
         }
       } catch {}
-    }
-
-    // Fallback bypass for universal dev testing: "123456"
-    if (cleanCode === '123456') {
-      isValid = true;
     }
 
     if (!isValid) {
