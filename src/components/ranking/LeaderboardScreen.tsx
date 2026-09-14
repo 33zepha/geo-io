@@ -10,6 +10,8 @@ import { AdminPlayerModal } from './AdminPlayerModal';
 import { getAvatarById } from '../../data/avatars';
 import { soundManager } from '../../lib/audio';
 import { RefreshCw, Trophy, Users } from 'lucide-react';
+import { fetchCompetition } from '../../lib/competitionService';
+import type { WeeklyStanding } from '../../types/competition';
 
 interface LeaderboardData {
   entries: LeaderboardEntry[];
@@ -30,19 +32,29 @@ export const LeaderboardScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
+  const [view, setView] = useState<'general' | 'weekly'>('general');
+  const [weekly, setWeekly] = useState<WeeklyStanding[]>([]);
+  const [competitionAvailable, setCompetitionAvailable] = useState(false);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
-    try {
-      setData(await fetchLiveLeaderboardEntries());
-    } catch (error) {
-      console.warn('Leaderboard refresh error:', error);
+    const [general, competition] = await Promise.allSettled([
+      fetchLiveLeaderboardEntries(),
+      fetchCompetition(),
+    ]);
+    if (general.status === 'fulfilled') {
+      setData(general.value);
+    } else {
+      console.warn('General leaderboard refresh error:', general.reason);
       setData(EMPTY_DATA);
       setLoadError('Impossible de charger le classement réel pour le moment.');
-    } finally {
-      setIsLoading(false);
     }
+    const competitionIsEnabled = competition.status === 'fulfilled' && competition.value.overview.enabled;
+    setCompetitionAvailable(competitionIsEnabled);
+    setWeekly(competitionIsEnabled ? competition.value.standings : []);
+    if (!competitionIsEnabled) setView('general');
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -91,12 +103,44 @@ export const LeaderboardScreen: React.FC = () => {
         </div>
       </div>
 
+      {competitionAvailable && (
+        <div className="mt-3 flex shrink-0 rounded-xl border border-clay-border bg-creme-100 p-1 text-xs font-bold">
+          <button type="button" onClick={() => setView('general')} className={`min-h-10 flex-1 rounded-lg px-3 transition ${view === 'general' ? 'bg-white text-clay shadow-xs' : 'text-clay-muted'}`}>Classement général</button>
+          <button type="button" onClick={() => setView('weekly')} className={`min-h-10 flex-1 rounded-lg px-3 transition ${view === 'weekly' ? 'bg-white text-terracotta shadow-xs' : 'text-clay-muted'}`}>Cette semaine · /700</button>
+        </div>
+      )}
+
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pr-1 pb-5">
         {isLoading ? (
           <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-terracotta/20 border-t-terracotta" />
             <div className="text-sm font-medium text-clay-muted">Chargement des profils réels…</div>
           </div>
+        ) : view === 'weekly' ? (
+          weekly.length === 0 ? (
+            <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-clay-border bg-white/60 px-6 text-center">
+              <Trophy className="mb-2 h-7 w-7 text-honey" />
+              <p className="font-display text-sm font-bold text-clay">La course commence cette semaine</p>
+              <p className="mt-1 text-xs text-clay-muted">Les premiers points apparaîtront après une mission officielle.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {weekly.map((entry) => {
+                const avatar = getAvatarById(entry.avatarId);
+                const isCurrent = user?.id === entry.userId || entry.pseudo === 'MobilePreview';
+                return (
+                  <div key={entry.userId} className={`grid grid-cols-[2.5rem_1fr_auto] items-center gap-2 rounded-xl border px-3 py-2.5 ${isCurrent ? 'border-honey/40 bg-honey-light' : 'border-clay-border bg-white'}`}>
+                    <div className="font-display text-center text-sm font-extrabold text-clay">#{entry.rank}</div>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-clay-border bg-creme-100 text-lg">{avatar.emoji}</span>
+                      <div className="min-w-0"><div className="truncate font-display text-xs font-bold text-clay">{entry.pseudo}{isCurrent ? ' · Vous' : ''}</div><div className="text-[10px] text-clay-muted">{entry.missionsCompleted} missions · {entry.accuracy}%</div></div>
+                    </div>
+                    <div className="text-right"><div className="font-display text-base font-extrabold text-terracotta">{entry.points}</div><div className="text-[9px] uppercase text-clay-subtle">points</div></div>
+                  </div>
+                );
+              })}
+            </div>
+          )
         ) : loadError ? (
           <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-terracotta/20 bg-terracotta/5 px-6 text-center">
             <p className="font-display text-sm font-bold text-clay">Classement indisponible</p>

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, Mail, User, X } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import { soundManager } from '../../lib/audio';
+import { fetchCompetition } from '../../lib/competitionService';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -27,6 +28,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [pseudo, setPseudo] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [competitionVisible, setCompetitionVisible] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !isMandatoryGate) return;
+    setCompetitionVisible(false);
+    void fetchCompetition()
+      .then((result) => setCompetitionVisible(result.overview.enabled))
+      .catch(() => setCompetitionVisible(false));
+  }, [isOpen, isMandatoryGate]);
 
   if (!isOpen) return null;
 
@@ -118,6 +128,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'Retrouvez votre profil, votre progression et votre place au classement.'}
               </p>
             </div>
+
+            {isMandatoryGate && competitionVisible && (
+              <div className="rounded-2xl border border-honey/35 bg-honey-light/70 p-3 text-left">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-terracotta">Missions du jour</div>
+                    <div className="font-display text-sm font-extrabold text-clay">100 points à prendre aujourd’hui</div>
+                  </div>
+                  <span className="rounded-full bg-clay px-2.5 py-1 text-[10px] font-bold text-white">Hebdo · /700</span>
+                </div>
+                <p className="mt-1.5 text-[11px] leading-snug text-clay-muted">Deux sélections communes à toute la promo. Connecte-toi pour enregistrer tes résultats officiels.</p>
+              </div>
+            )}
 
             <div className="flex rounded-xl border border-clay-border bg-creme-100 p-1 text-xs font-bold">
               <button

@@ -41,12 +41,14 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       setResults((prev) => [
         ...prev,
         {
+          questionId: currentQ.id,
           title: currentQ.title,
           targetName: currentQ.options[currentQ.correctIndex],
           targetCode: currentQ.targetCode,
           isCorrect: true,
           scoreEarned: 100,
           explanation: currentQ.explanation,
+          userAnswerCode: currentQ.options[idx],
         },
       ]);
     } else {
@@ -54,6 +56,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       setResults((prev) => [
         ...prev,
         {
+          questionId: currentQ.id,
           title: currentQ.title,
           targetName: currentQ.options[currentQ.correctIndex],
           targetCode: currentQ.targetCode,
@@ -61,6 +64,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
           scoreEarned: 0,
           explanation: currentQ.explanation,
           userAnswer: currentQ.options[idx],
+          userAnswerCode: currentQ.options[idx],
         },
       ]);
     }
@@ -102,7 +106,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
   if (!currentQ) return null;
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain sm:gap-3 sm:overflow-hidden">
       {/* Top Question HUD */}
       <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -117,7 +121,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
             <X className="w-4 h-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="max-h-[4.5rem] overflow-y-auto font-display text-sm font-extrabold leading-snug text-clay sm:max-h-none sm:text-base">
+            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay sm:text-base">
               {currentQ.title}
             </h2>
           </div>
@@ -132,9 +136,9 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       </div>
 
       {/* Main Map Display */}
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:p-2">
+      <div className="relative flex min-h-[19rem] flex-1 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:min-h-0 sm:flex-row sm:items-center sm:p-2">
         <HeroicFranceMap
-          className="w-full h-full max-w-full max-h-full"
+          className="min-h-0 w-full flex-1 sm:h-full sm:max-h-full sm:max-w-full"
           interactive={false}
           targetCode={isAnswered ? currentQ.targetCode : null}
           highlightCodes={isAnswered ? currentQ.relatedCodes || [] : []}
@@ -149,16 +153,16 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
           }
         />
 
-        {/* Floating Answer Explanation & Next Button inside Map */}
+        {/* On mobile the answer stays in the flow so its full text remains readable. */}
         {isAnswered && (
-          <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,28rem)] -translate-x-1/2 sm:bottom-3">
-            <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
-              <p className="max-h-24 overflow-y-auto text-xs font-medium leading-snug text-clay sm:max-h-none">
+          <div className="relative z-40 mt-2 w-full shrink-0 sm:absolute sm:bottom-3 sm:left-1/2 sm:mt-0 sm:w-[min(94%,28rem)] sm:-translate-x-1/2">
+            <div className="flex flex-col items-stretch gap-3 rounded-xl border border-clay-border bg-white/95 p-3 shadow-md backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+              <p className="break-words text-xs font-medium leading-snug text-clay">
                 💡 {currentQ.explanation}
               </p>
               <button
                 onClick={handleNext}
-                className="min-h-11 px-4 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer"
+                className="flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 self-end rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
               >
                 <span>{currentIndex + 1 >= questions.length ? 'Bilan' : 'Suivant'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -197,7 +201,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] font-mono font-bold ${badgeStyle}`}>
                   {idx + 1}
                 </span>
-                <span className="text-xs font-semibold leading-snug text-clay sm:text-sm">{opt}</span>
+                <span className="min-w-0 flex-1 break-words text-xs font-semibold leading-snug text-clay sm:text-sm">{opt}</span>
               </div>
 
               {isAnswered && idx === currentQ.correctIndex && (

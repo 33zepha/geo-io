@@ -52,6 +52,7 @@ export interface EnqueteTerritoire {
 }
 
 export interface RoundResult {
+  questionId?: string;
   title: string;
   targetName: string;
   targetCode: string;
@@ -59,6 +60,7 @@ export interface RoundResult {
   scoreEarned: number;
   explanation?: string;
   userAnswer?: string;
+  userAnswerCode?: string | null;
 }
 
 export interface GameSessionSummary {

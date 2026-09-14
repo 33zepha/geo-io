@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { 
   GameModeType, 
   GameDifficulty, 
@@ -38,6 +38,10 @@ import {
   X
 } from 'lucide-react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { DailyMissionPanel } from '../competition/DailyMissionPanel';
+import { beginOfficialAttempt, fetchCompetition, submitOfficialAttempt } from '../../lib/competitionService';
+import { buildOfficialChallenge } from '../../lib/officialChallenge';
+import type { CompetitionOverview, CompetitionUpdate, OfficialAttempt } from '../../types/competition';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -99,6 +103,42 @@ export const GameHub: React.FC<GameHubProps> = ({
   const [silhouetteRounds, setSilhouetteRounds] = useState<SilhouetteRound[]>([]);
   const [enquetes, setEnquetes] = useState<EnqueteTerritoire[]>([]);
   const [summary, setSummary] = useState<GameSessionSummary | null>(null);
+  const [competition, setCompetition] = useState<CompetitionOverview | null>(null);
+  const [competitionError, setCompetitionError] = useState<string | null>(null);
+  const [competitionLoading, setCompetitionLoading] = useState(true);
+  const [officialAttempt, setOfficialAttempt] = useState<OfficialAttempt | null>(null);
+  const [competitionUpdate, setCompetitionUpdate] = useState<CompetitionUpdate | null>(null);
+
+  const refreshCompetition = useCallback(async () => {
+    try {
+      setCompetition((await fetchCompetition(true)).overview);
+      setCompetitionError(null);
+    } catch (error) {
+      setCompetitionError(error instanceof Error ? error.message : 'Missions indisponibles.');
+    } finally {
+      setCompetitionLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void refreshCompetition(); }, [refreshCompetition]);
+
+  const startOfficialMission = async (slot: 1 | 2) => {
+    try {
+      setCompetitionError(null);
+      const attempt = await beginOfficialAttempt(slot);
+      const challenge = buildOfficialChallenge(attempt.dayKey, attempt.slot, attempt.mode);
+      setOfficialAttempt(attempt);
+      setCompetitionUpdate(null);
+      setSettings({ mode: attempt.mode, difficulty: 'intermediaire', questionCount: 5, regionCode: undefined });
+      if (challenge.mode === 'clic_carte') setClickTargets(challenge.items);
+      else if (challenge.mode === 'qcm') setQcmQuestions(challenge.items);
+      else if (challenge.mode === 'silhouette') setSilhouetteRounds(challenge.items);
+      else setEnquetes(challenge.items);
+      setScreen('playing');
+    } catch (error) {
+      setCompetitionError(error instanceof Error ? error.message : 'Impossible de démarrer la mission.');
+    }
+  };
 
   const startGame = () => {
     soundManager.playClick(500);
@@ -170,6 +210,20 @@ export const GameHub: React.FC<GameHubProps> = ({
 
     setSummary(sessionSummary);
     setScreen('summary');
+
+    if (officialAttempt) {
+      const answers = results.map((result) => ({ questionId: result.questionId || '', answerCode: result.userAnswerCode ?? null }));
+      void submitOfficialAttempt(officialAttempt.id, answers)
+        .then((update) => {
+          setCompetitionUpdate(update);
+          setCompetition(update.overview);
+          setOfficialAttempt(null);
+        })
+        .catch((error) => {
+          setOfficialAttempt(null);
+          setCompetitionError(error instanceof Error ? error.message : 'Résultat officiel refusé.');
+        });
+    }
   };
 
   const modesList = [
@@ -233,6 +287,10 @@ export const GameHub: React.FC<GameHubProps> = ({
               <h1 className="font-display text-xl font-extrabold tracking-tight text-clay sm:text-2xl">
                 Configuration de partie
               </h1>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <DailyMissionPanel overview={competition} loading={competitionLoading} error={competitionError} onStart={(slot) => void startOfficialMission(slot)} />
             </motion.div>
 
             {/* Catch-up Banner if active */}
@@ -535,6 +593,8 @@ export const GameHub: React.FC<GameHubProps> = ({
           >
             <GameSummary
               summary={summary}
+              competitionUpdate={competitionUpdate}
+              competitionPending={Boolean(officialAttempt)}
               onReplay={startGame}
               onBackToMenu={() => setScreen('menu')}
             />
