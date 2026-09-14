@@ -117,7 +117,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
             <X className="w-4 h-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="font-display text-sm font-extrabold leading-snug text-clay line-clamp-2 sm:text-base sm:truncate">
+            <h2 className="max-h-[4.5rem] overflow-y-auto font-display text-sm font-extrabold leading-snug text-clay sm:max-h-none sm:text-base">
               {currentQ.title}
             </h2>
           </div>
@@ -153,7 +153,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
         {isAnswered && (
           <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,28rem)] -translate-x-1/2 sm:bottom-3">
             <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
-              <p className="text-xs text-clay leading-snug font-medium line-clamp-4 sm:line-clamp-none">
+              <p className="max-h-24 overflow-y-auto text-xs font-medium leading-snug text-clay sm:max-h-none">
                 💡 {currentQ.explanation}
               </p>
               <button
@@ -197,7 +197,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
                 <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] font-mono font-bold ${badgeStyle}`}>
                   {idx + 1}
                 </span>
-                <span className="text-xs font-semibold leading-snug text-clay line-clamp-2 sm:text-sm">{opt}</span>
+                <span className="text-xs font-semibold leading-snug text-clay sm:text-sm">{opt}</span>
               </div>
 
               {isAnswered && idx === currentQ.correctIndex && (

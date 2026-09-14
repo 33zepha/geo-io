@@ -182,7 +182,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
         {isAnswered && (
           <div className="absolute bottom-4 left-1/2 z-40 w-[min(94%,28rem)] -translate-x-1/2">
             <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
-              <div className="text-xs text-clay leading-snug font-medium line-clamp-2 truncate">
+              <div className="max-h-16 overflow-y-auto text-xs font-medium leading-snug text-clay">
                 💡 {targetGrammar.withArticle} • Chef-lieu : <strong>{currentRound.targetDept.prefecture}</strong> ({currentRound.targetDept.regionName}).
               </div>
               <button
@@ -248,7 +248,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
                 <span className={`w-5 h-5 rounded-md text-[11px] font-mono font-bold flex items-center justify-center border shrink-0 ${badgeStyle}`}>
                   {idx + 1}
                 </span>
-                <span className="text-xs sm:text-sm font-semibold text-clay truncate">
+                <span className="text-xs font-semibold leading-snug text-clay sm:text-sm">
                   {optGrammar.withArticle}
                 </span>
               </div>

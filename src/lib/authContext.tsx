@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { UserProfile, AuthSession } from '../types/auth';
 import { supabase, isSupabaseConfigured } from './supabase';
-import { loadPlayerStats } from './storage';
+import { loadPlayerStats, hydrateLocalStatsFromCloud } from './storage';
 
 export const LOCAL_AUTH_SESSION_KEY = 'geo_io_auth_session_v2';
 
@@ -120,6 +120,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const applyAuthenticatedProfile = (profile: UserProfile) => {
+    // Always pull cloud progress into local stats BEFORE any game can sync back.
+    hydrateLocalStatsFromCloud({
+      xp: profile.xp,
+      level: profile.level,
+      streak: profile.streak,
+      masteredDeptsCount: profile.masteredDeptsCount,
+      accuracy: profile.accuracy,
+    });
     setUser(profile);
     setIsAuthenticated(true);
     localStorage.setItem(LOCAL_AUTH_SESSION_KEY, JSON.stringify({

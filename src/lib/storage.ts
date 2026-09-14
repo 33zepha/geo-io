@@ -97,6 +97,42 @@ export function savePlayerStats(stats: PlayerStats): void {
   } catch {}
 }
 
+/**
+ * Hydrate local progress from the cloud profile after login.
+ * Prevents a fresh browser (0 XP) from overwriting a high cloud score on the next game sync.
+ */
+export function hydrateLocalStatsFromCloud(profile: {
+  xp: number;
+  level: number;
+  streak: number;
+  masteredDeptsCount: number;
+  accuracy: number;
+}): PlayerStats {
+  const local = loadPlayerStats();
+  const cloudXp = Math.max(0, Number(profile.xp) || 0);
+  const mergedXp = Math.max(local.xp || 0, cloudXp);
+  const rankInfo = getRankForXp(mergedXp);
+
+  const merged: PlayerStats = {
+    ...local,
+    xp: mergedXp,
+    level: Math.max(local.level || 1, profile.level || 1, rankInfo.level),
+    rankTitle: rankInfo.title,
+    streak: Math.max(local.streak || 1, profile.streak || 1),
+    totalCorrect: local.totalCorrect || 0,
+    totalQuestions: local.totalQuestions || 0,
+  };
+
+  // If cloud accuracy exists and local has no history, seed a plausible ratio.
+  if ((merged.totalQuestions || 0) === 0 && profile.accuracy > 0) {
+    merged.totalQuestions = 20;
+    merged.totalCorrect = Math.round((20 * Math.min(100, profile.accuracy)) / 100);
+  }
+
+  savePlayerStats(merged);
+  return merged;
+}
+
 export function addXpAndProgress(
   earnedXp: number,
   mode: 'pointage' | 'master' | 'silhouette' | 'qcm' | 'enquete',
@@ -186,7 +222,7 @@ export function addXpAndProgress(
   return { stats: current, leveledUp, newBadges };
 }
 
-// Automatically sync student progress with persistent session & Supabase Cloud
+// Sync student progress to session + Supabase — NEVER lower cloud XP from a fresh device.
 function syncGameStatsWithCloud(
   stats: PlayerStats,
   mode: string,
@@ -198,55 +234,96 @@ function syncGameStatsWithCloud(
 
   try {
     const raw = localStorage.getItem('geo_io_auth_session_v2');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed?.isAuthenticated && parsed?.user) {
-        const masteredCount = Object.values(stats.departmentStats || {}).filter(
-          (d) => d.correct >= 1
-        ).length;
-        const accuracy = stats.totalQuestions > 0
-          ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
-          : 85;
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.isAuthenticated || !parsed?.user?.id) return;
 
-        parsed.user.xp = stats.xp;
-        parsed.user.level = stats.level;
-        parsed.user.streak = stats.streak;
-        parsed.user.masteredDeptsCount = masteredCount;
-        parsed.user.accuracy = accuracy;
+    const masteredCount = Object.values(stats.departmentStats || {}).filter(
+      (d) => d.correct >= 1
+    ).length;
+    const accuracy =
+      stats.totalQuestions > 0
+        ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
+        : Number(parsed.user.accuracy) || 85;
 
-        localStorage.setItem('geo_io_auth_session_v2', JSON.stringify(parsed));
-        window.dispatchEvent(new CustomEvent('geo_io_profile_updated', { detail: parsed.user }));
+    // Keep the best known XP in the local auth cache (cloud may still be higher until fetch).
+    const sessionXp = Math.max(Number(parsed.user.xp) || 0, stats.xp || 0);
+    const sessionLevel = Math.max(Number(parsed.user.level) || 1, stats.level || 1);
+    const sessionStreak = Math.max(Number(parsed.user.streak) || 1, stats.streak || 1);
+    const sessionMastered = Math.max(
+      Number(parsed.user.masteredDeptsCount) || 0,
+      masteredCount
+    );
 
-        // Async sync to Supabase Cloud if configured
-        if (isSupabaseConfigured && supabase) {
-          const client = supabase;
-          (async () => {
-            try {
-              await client
-                .from('profiles')
-                .update({
-                  xp: stats.xp,
-                  level: stats.level,
-                  streak: stats.streak,
-                  mastered_depts: masteredCount,
-                  accuracy: accuracy,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq('id', parsed.user.id);
+    parsed.user.xp = sessionXp;
+    parsed.user.level = sessionLevel;
+    parsed.user.streak = sessionStreak;
+    parsed.user.masteredDeptsCount = sessionMastered;
+    parsed.user.accuracy = Math.max(Number(parsed.user.accuracy) || 0, accuracy);
 
-              await client
-                .from('scores')
-                .insert({
-                  user_id: parsed.user.id,
-                  mode: mode,
-                  score: score,
-                  accuracy: questionCount > 0 ? Math.round((correctCount / questionCount) * 100) : 100,
-                });
-            } catch {}
-          })();
+    localStorage.setItem('geo_io_auth_session_v2', JSON.stringify(parsed));
+    window.dispatchEvent(new CustomEvent('geo_io_profile_updated', { detail: parsed.user }));
+
+    if (!isSupabaseConfigured || !supabase) return;
+    const client = supabase;
+    const userId = parsed.user.id as string;
+
+    void (async () => {
+      try {
+        const { data: cloudRow } = await client
+          .from('profiles')
+          .select('xp, level, streak, mastered_depts, accuracy')
+          .eq('id', userId)
+          .maybeSingle();
+
+        const cloudXp = Number(cloudRow?.xp) || 0;
+        const safeXp = Math.max(cloudXp, stats.xp || 0, sessionXp);
+        const safeLevel = Math.max(
+          Number(cloudRow?.level) || 1,
+          stats.level || 1,
+          getRankForXp(safeXp).level
+        );
+        const safeStreak = Math.max(Number(cloudRow?.streak) || 1, stats.streak || 1);
+        const safeMastered = Math.max(
+          Number(cloudRow?.mastered_depts) || 0,
+          masteredCount
+        );
+        const safeAccuracy = Math.max(
+          Number(cloudRow?.accuracy) || 0,
+          accuracy
+        );
+
+        // Persist the merged floor back to local so the next game continues from cloud.
+        if (safeXp > (stats.xp || 0)) {
+          const mergedLocal = { ...stats, xp: safeXp, level: safeLevel, streak: safeStreak };
+          const rank = getRankForXp(safeXp);
+          mergedLocal.level = rank.level;
+          mergedLocal.rankTitle = rank.title;
+          savePlayerStats(mergedLocal);
         }
+
+        await client
+          .from('profiles')
+          .update({
+            xp: safeXp,
+            level: safeLevel,
+            streak: safeStreak,
+            mastered_depts: safeMastered,
+            accuracy: safeAccuracy,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', userId);
+
+        await client.from('scores').insert({
+          user_id: userId,
+          mode,
+          score,
+          accuracy: questionCount > 0 ? Math.round((correctCount / questionCount) * 100) : 100,
+        });
+      } catch (error) {
+        console.warn('Game cloud sync error:', error);
       }
-    }
+    })();
   } catch (e) {
     console.warn('Game cloud sync error:', e);
   }

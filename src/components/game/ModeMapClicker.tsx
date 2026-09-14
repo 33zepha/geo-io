@@ -167,11 +167,13 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
             <X className="h-4 w-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="line-clamp-2 font-display text-sm font-extrabold leading-snug text-clay sm:text-lg">
+            <h2 className="max-h-[4.5rem] overflow-y-auto font-display text-sm font-extrabold leading-snug text-clay sm:max-h-none sm:text-lg">
               {currentTarget.prompt}
             </h2>
             {currentTarget.subPrompt && (
-              <p className="mt-1 line-clamp-1 text-xs leading-relaxed text-clay-muted">{currentTarget.subPrompt}</p>
+              <p className="mt-1 max-h-12 overflow-y-auto text-xs leading-relaxed text-clay-muted sm:max-h-none">
+                {currentTarget.subPrompt}
+              </p>
             )}
           </div>
         </div>

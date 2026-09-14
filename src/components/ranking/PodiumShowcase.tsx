@@ -9,6 +9,7 @@ import { Crown } from 'lucide-react';
 interface PodiumShowcaseProps {
   top3: LeaderboardEntry[];
   currentUserId?: string;
+  onSelect?: (entry: LeaderboardEntry) => void;
 }
 
 const rankStyles = [
@@ -17,7 +18,7 @@ const rankStyles = [
   'border-terracotta/30 bg-terracotta-light sm:order-3',
 ];
 
-export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUserId }) => {
+export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUserId, onSelect }) => {
   if (top3.length === 0) return null;
 
   return (
@@ -25,14 +26,28 @@ export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUse
       {top3.map((entry, index) => {
         const avatar = getAvatarById(entry.user.avatarId);
         const isCurrent = entry.user.id === currentUserId;
+        const interactive = Boolean(onSelect);
 
         return (
           <motion.div
             key={entry.user.id}
+            role={interactive ? 'button' : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            onClick={interactive ? () => onSelect?.(entry) : undefined}
+            onKeyDown={
+              interactive
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelect?.(entry);
+                    }
+                  }
+                : undefined
+            }
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.06, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className={`flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 ${rankStyles[index]} ${index === 0 ? 'sm:py-3.5' : ''}`}
+            className={`flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 ${rankStyles[index]} ${index === 0 ? 'sm:py-3.5' : ''} ${interactive ? 'cursor-pointer transition hover:brightness-[0.98]' : ''}`}
           >
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-white text-xl shadow-xs">
               {avatar.emoji}

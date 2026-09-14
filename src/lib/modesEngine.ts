@@ -272,9 +272,14 @@ export function generateQcmQuestions(
         relatedCodes: correctReg.departments,
       });
     } else {
-      // Spécialité / fait marquant
+      // Spécialité / fait marquant (jamais tronquer une option — illisible en jeu)
       const specs = (target.specialties || []).filter(Boolean);
-      const correct = specs[0] || target.academicFact?.slice(0, 42) || target.prefecture;
+      const factOption =
+        target.academicFact && target.academicFact.length <= 90
+          ? target.academicFact
+          : null;
+      const correct =
+        specs[0] || factOption || `Préfecture : ${target.prefecture}`;
       const otherSpecs: string[] = [];
       for (const d of shuffle(DEPARTMENTS_LIST)) {
         if (d.code === target.code) continue;
@@ -590,7 +595,7 @@ function buildAutoEnquetes(): EnqueteTerritoire[] {
         },
         {
           label: 'Fait universitaire',
-          text: fact.length > 160 ? fact.slice(0, 157) + '…' : fact,
+          text: fact,
           category: 'amenagement',
         },
       ],

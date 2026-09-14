@@ -2,9 +2,11 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../lib/authContext';
+import { isAdminEmail } from '../../lib/admin';
 import { fetchLiveLeaderboardEntries } from '../../lib/rankingService';
 import { LeaderboardEntry } from '../../types/ranking';
 import { PodiumShowcase } from './PodiumShowcase';
+import { AdminPlayerModal } from './AdminPlayerModal';
 import { getAvatarById } from '../../data/avatars';
 import { soundManager } from '../../lib/audio';
 import { RefreshCw, Trophy, Users } from 'lucide-react';
@@ -23,9 +25,11 @@ const EMPTY_DATA: LeaderboardData = {
 
 export const LeaderboardScreen: React.FC = () => {
   const { user } = useAuth();
+  const isAdmin = isAdminEmail(user?.email);
   const [data, setData] = useState<LeaderboardData>(EMPTY_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<LeaderboardEntry | null>(null);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -44,6 +48,12 @@ export const LeaderboardScreen: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const openAdminPlayer = (entry: LeaderboardEntry) => {
+    if (!isAdmin) return;
+    soundManager.playClick(420);
+    setSelectedEntry(entry);
+  };
 
   return (
     <div className="flex h-full max-h-full w-full select-none flex-col overflow-hidden safe-bottom">
@@ -102,7 +112,11 @@ export const LeaderboardScreen: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-2.5">
-            <PodiumShowcase top3={data.top3} currentUserId={user?.id} />
+            <PodiumShowcase
+              top3={data.top3}
+              currentUserId={user?.id}
+              onSelect={isAdmin ? openAdminPlayer : undefined}
+            />
 
             {data.rest.length > 0 && (
               <div className="overflow-hidden rounded-xl border border-clay-border/80 bg-white">
@@ -121,9 +135,22 @@ export const LeaderboardScreen: React.FC = () => {
                     return (
                       <div
                         key={entry.user.id}
+                        role={isAdmin ? 'button' : undefined}
+                        tabIndex={isAdmin ? 0 : undefined}
+                        onClick={isAdmin ? () => openAdminPlayer(entry) : undefined}
+                        onKeyDown={
+                          isAdmin
+                            ? (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  openAdminPlayer(entry);
+                                }
+                              }
+                            : undefined
+                        }
                         className={`fade-rise grid grid-cols-12 items-center px-3 py-2 text-xs transition-colors ${
                           isCurrent ? 'bg-honey-light/80' : ''
-                        }`}
+                        } ${isAdmin ? 'cursor-pointer hover:bg-creme-100/80' : ''}`}
                       >
                         <div className="col-span-2 text-center font-display font-extrabold text-clay-muted sm:col-span-1">
                           #{entry.rank}
@@ -154,6 +181,17 @@ export const LeaderboardScreen: React.FC = () => {
           </div>
         )}
       </div>
+
+      {isAdmin && selectedEntry && (
+        <AdminPlayerModal
+          entry={selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+          onBanned={() => {
+            setSelectedEntry(null);
+            loadData();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -26,7 +26,18 @@ export async function fetchLiveLeaderboardEntries(): Promise<{
 
   if (error) throw error;
 
+  // Soft-ban column may not exist yet — ignore failures and keep ranking up.
+  let bannedIds = new Set<string>();
+  const { data: bannedRows, error: bannedError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('is_banned', true);
+  if (!bannedError && bannedRows) {
+    bannedIds = new Set(bannedRows.map((row) => row.id as string));
+  }
+
   const ranked: LeaderboardEntry[] = (profiles ?? [])
+    .filter((profile) => !bannedIds.has(profile.id))
     .map((profile) => {
       const user: UserProfile = {
         id: profile.id,
