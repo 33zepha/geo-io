@@ -134,7 +134,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       {/* Main Map Display */}
       <div className="bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex-1 min-h-0 flex items-center justify-center">
         <HeroicFranceMap
-          className="h-full w-auto max-h-full aspect-square"
+          className="w-full h-full max-w-full max-h-full"
           interactive={false}
           targetCode={currentQ.targetCode}
           highlightCodes={isAnswered ? currentQ.relatedCodes || [] : []}

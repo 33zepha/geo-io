@@ -140,9 +140,9 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       </div>
 
       {/* Middle Stage: Split Clues (left) & Map (right) */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-5 gap-2.5 overflow-hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-5 md:grid-rows-1 gap-2.5 overflow-hidden">
         {/* Clues Card (Left 2 cols) */}
-        <div className="md:col-span-2 bg-white border border-clay-border/80 rounded-2xl p-3 shadow-sm flex flex-col justify-between overflow-hidden gap-2">
+        <div className="md:col-span-2 max-h-[210px] md:max-h-none bg-white border border-clay-border/80 rounded-2xl p-3 shadow-sm flex flex-col justify-between overflow-hidden gap-2">
           <div className="flex items-center justify-between gap-2 shrink-0 border-b border-clay-border/60 pb-2">
             <span className="text-xs font-bold text-clay">
               Indices ({revealedCluesCount}/{currentEnquete.clues.length})
@@ -182,9 +182,9 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
         </div>
 
         {/* Map Container (Right 3 cols) */}
-        <div className="md:col-span-3 bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex items-center justify-center">
+        <div className="md:col-span-3 min-h-0 bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex items-center justify-center">
           <HeroicFranceMap
-            className="h-full w-auto max-h-full aspect-square"
+            className="w-full h-full max-w-full max-h-full"
             interactive={!isAnswered}
             targetCode={currentEnquete.targetCode}
             feedbackState={feedback}

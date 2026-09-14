@@ -118,6 +118,28 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
   const isZoomed = currentView === 'idf' || ((currentView === 'region' || currentView === 'auto') && Boolean(activeRegion));
 
+  let focusedRegionCode: string | null = null;
+  if (currentView === 'idf') {
+    focusedRegionCode = '11';
+  } else if ((currentView === 'region' || currentView === 'auto') && activeRegion) {
+    focusedRegionCode = activeRegion;
+  }
+
+  const visibleDepartmentPaths = useMemo(() => {
+    if (!focusedRegionCode) return DEPARTMENT_MAP_PATHS;
+    const region = REGIONS[focusedRegionCode];
+    if (!region) return DEPARTMENT_MAP_PATHS;
+    const visibleCodes = new Set(region.departments);
+    return DEPARTMENT_MAP_PATHS.filter((dept) => visibleCodes.has(dept.code));
+  }, [focusedRegionCode]);
+
+  const renderedDepartmentPaths = useMemo(
+    () => focusedRegionCode
+      ? visibleDepartmentPaths
+      : visibleDepartmentPaths.filter((dept) => !dept.isDrom),
+    [focusedRegionCode, visibleDepartmentPaths]
+  );
+
   const hoveredDept = useMemo(() => {
     if (!hoveredCode) return null;
     return DEPARTMENTS[hoveredCode] || null;
@@ -379,7 +401,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
       {/* SVG Map Container */}
       <svg
         viewBox={viewBox}
-        className="w-full h-full overflow-visible transition-all duration-300 ease-out"
+        className="w-full h-full overflow-hidden transition-all duration-300 ease-out"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
@@ -399,53 +421,71 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           <filter id="medallion-shadow" x="-15%" y="-15%" width="130%" height="130%">
             <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#403020" floodOpacity="0.12" />
           </filter>
+
+          {/* Excludes the overseas inset geometry embedded in the outline source. */}
+          <clipPath id="metropolitan-clip">
+            <rect x="145" y="80" width="655" height="650" />
+          </clipPath>
         </defs>
 
-        {/* 1. SOFT MARITIME SHORELINE (Atlantic, Channel, Mediterranean coastal glow) */}
-        <g id="maritime-shoreline" pointerEvents="none">
-          {/* Outer ocean ripple */}
-          <path
-            d={METROPOLITAN_OUTLINE_PATH}
-            fill="none"
-            stroke="#8EC3D2"
-            strokeWidth="12"
-            strokeOpacity="0.16"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          {/* Mid shoreline contour */}
-          <path
-            d={METROPOLITAN_OUTLINE_PATH}
-            fill="none"
-            stroke="#5A9FB4"
-            strokeWidth="5.5"
-            strokeOpacity="0.25"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          {/* Inner crisp nautical coast */}
-          <path
-            d={METROPOLITAN_OUTLINE_PATH}
-            fill="none"
-            stroke="#36798E"
-            strokeWidth="1.8"
-            strokeOpacity="0.38"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        </g>
+        {!focusedRegionCode && (
+          <>
+            {/* 1. SOFT MARITIME SHORELINE (Atlantic, Channel, Mediterranean coastal glow) */}
+            <g id="maritime-shoreline" pointerEvents="none" clipPath="url(#metropolitan-clip)">
+              <path
+                d={METROPOLITAN_OUTLINE_PATH}
+                fill="none"
+                stroke="#8EC3D2"
+                strokeWidth="12"
+                strokeOpacity="0.16"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              <path
+                d={METROPOLITAN_OUTLINE_PATH}
+                fill="none"
+                stroke="#5A9FB4"
+                strokeWidth="5.5"
+                strokeOpacity="0.25"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              <path
+                d={METROPOLITAN_OUTLINE_PATH}
+                fill="none"
+                stroke="#36798E"
+                strokeWidth="1.8"
+                strokeOpacity="0.38"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            </g>
 
-        {/* 2. PHYSICAL PLATEAU BASE (3D wood/cardboard underlay under metropolitan France) */}
-        <path
-          d={METROPOLITAN_OUTLINE_PATH}
-          fill="#ECE4D8"
-          filter="url(#plateau-shadow)"
-          pointerEvents="none"
-        />
+            {/* 2. PHYSICAL PLATEAU BASE (3D wood/cardboard underlay under metropolitan France) */}
+            <path
+              d={METROPOLITAN_OUTLINE_PATH}
+              fill="#ECE4D8"
+              filter="url(#plateau-shadow)"
+              pointerEvents="none"
+              clipPath="url(#metropolitan-clip)"
+            />
+          </>
+        )}
+
+        {focusedRegionCode &&
+          !['01', '02', '03', '04', '06'].includes(focusedRegionCode) &&
+          REGION_BOUNDARIES[focusedRegionCode] && (
+            <path
+              d={REGION_BOUNDARIES[focusedRegionCode].path}
+              fill="#ECE4D8"
+              filter="url(#plateau-shadow)"
+              pointerEvents="none"
+            />
+          )}
 
         {/* 3. DROM WOODEN / IVORY MEDALLIONS (Guadeloupe, Martinique, Guyane, Réunion, Mayotte) */}
-        {currentView !== 'idf' &&
-          DEPARTMENT_MAP_PATHS.filter((d) => d.isDrom && d.insetBox).map((d) => {
+        {focusedRegionCode && currentView !== 'idf' &&
+          visibleDepartmentPaths.filter((d) => d.isDrom && d.insetBox).map((d) => {
             const b = d.insetBox!;
             const deptInfo = DEPARTMENTS[d.code];
             const isTarget =
@@ -539,7 +579,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
         {/* 4. DEPARTMENT PIECES (Memoized paths with 3D hover elevation) */}
         <g id="departments">
-          {DEPARTMENT_MAP_PATHS.map((dept) => {
+          {renderedDepartmentPaths.map((dept) => {
             const style = getDepartmentStyle(dept.code);
             return (
               <DepartmentPathItem
@@ -563,6 +603,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           {Object.entries(REGION_BOUNDARIES).map(([regCode, regData]) => {
             // Exclude DROMs from regional groove overlay (they have medallions)
             if (['01', '02', '03', '04', '06'].includes(regCode)) return null;
+            if (focusedRegionCode && regCode !== focusedRegionCode) return null;
 
             const isRegHovered =
               hoveredDept?.regionCode === regCode && (selectionMode === 'region' || hoveredRegionDeptSet !== null);
@@ -635,6 +676,42 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           </g>
         )}
       </svg>
+
+      {/* Readable, finger-sized overseas selector in the free south-west corner. */}
+      {!focusedRegionCode && (
+        <div className="absolute bottom-12 left-3 z-20 w-[72px] rounded-xl border border-clay-border/80 bg-white/95 p-1.5 shadow-soft backdrop-blur-sm sm:bottom-3">
+          <div className="mb-1 text-center font-display text-[9px] font-bold uppercase tracking-wide text-clay-muted">
+            Outre-mer
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {DEPARTMENT_MAP_PATHS.filter((dept) => dept.isDrom).map((dept) => {
+              const style = getDepartmentStyle(dept.code);
+              return (
+                <button
+                  key={`drom-shortcut-${dept.code}`}
+                  type="button"
+                  disabled={!interactive}
+                  aria-label={`${dept.code} — ${dept.nom}`}
+                  title={`${dept.code} — ${dept.nom}`}
+                  className={`h-7 rounded-md border font-mono text-[9px] font-extrabold transition ${
+                    interactive ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default'
+                  }`}
+                  style={{
+                    backgroundColor: style.fill,
+                    borderColor: style.stroke,
+                    color: '#5A4E46',
+                  }}
+                  onMouseEnter={(event) => handleMouseEnter(dept, event)}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={() => handleClick(dept.code)}
+                >
+                  {dept.code}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Floating Tactical Cursor Tooltip (only when showTooltip is explicitly true) */}
       {showTooltip && hoveredDept && (

@@ -139,7 +139,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
       {/* Main Map Container (adapts dynamically to fill viewport) */}
       <div className="bg-white border border-clay-border/80 rounded-2xl p-2 sm:p-3 shadow-sm relative overflow-hidden flex-1 min-h-0 flex items-center justify-center">
         <HeroicFranceMap
-          className="h-full w-auto max-h-full aspect-square"
+          className="w-full h-full max-w-full max-h-full"
           interactive={!isAnswered}
           selectionMode={currentTarget.code.length > 2 && !currentTarget.code.startsWith('97') && !currentTarget.code.startsWith('2') ? 'region' : 'department'}
           targetCode={currentTarget.code}

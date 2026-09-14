@@ -125,7 +125,7 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
         {/* Map (col-span-2) */}
         <div className="lg:col-span-2 bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex flex-col items-center justify-center">
           <HeroicFranceMap
-            className="h-full w-auto max-h-full aspect-square"
+            className="w-full h-full max-w-full max-h-full"
             interactive={true}
             showTooltip={true}
             customDeptColors={classification.customColors}
