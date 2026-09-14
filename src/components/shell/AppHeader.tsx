@@ -45,7 +45,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
-      <div className="mx-auto flex h-[3.75rem] max-w-5xl items-center justify-between gap-2 px-3 sm:h-16 sm:gap-2.5 sm:px-5">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-2.5 px-3 py-3 sm:gap-3 sm:px-5 sm:py-3.5">
         {/* Brand & Logo */}
         <button
           onClick={() => {
@@ -65,7 +65,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         {/* Center Navigation Tabs */}
         <nav
-          className="flex min-w-0 items-center gap-1 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1.5 text-xs font-semibold shadow-inner"
+          className="flex min-w-0 items-center gap-1.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1.5 text-xs font-semibold shadow-inner"
           aria-label="Navigation principale"
         >
           <button
@@ -76,7 +76,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'quiz' ? 'page' : undefined}
             aria-label="Quiz et défis"
             title="Quiz et défis"
-            className={`pressable relative flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
+            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2.5 outline-none transition-all duration-200 md:h-11 md:min-w-11 md:px-3.5 ${
               activeTab === 'quiz'
                 ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30'
@@ -94,7 +94,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'mastery' ? 'page' : undefined}
             aria-label="Carte de maîtrise"
             title="Carte de maîtrise"
-            className={`pressable relative flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
+            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2.5 outline-none transition-all duration-200 md:h-11 md:min-w-11 md:px-3.5 ${
               activeTab === 'mastery'
                 ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-sage/30'
@@ -117,7 +117,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'ranking' ? 'page' : undefined}
             aria-label="Classement de la promotion"
             title="Classement de la promotion"
-            className={`pressable relative flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
+            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2.5 outline-none transition-all duration-200 md:h-11 md:min-w-11 md:px-3.5 ${
               activeTab === 'ranking'
                 ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-honey/30'
@@ -128,7 +128,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </button>
         </nav>
 
-        {/* Right Section: Streak, Level, Sound & Profile */}
+        {/* Right Section: Streak, Sound & Profile */}
         <div className="flex shrink-0 items-center gap-2 text-xs font-medium">
           {/* Daily Streak */}
           <div
@@ -142,7 +142,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="pressable flex h-11 w-11 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30"
+            className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30 md:h-11 md:w-11"
             title={soundEnabled ? 'Couper le son' : 'Activer le son'}
             aria-label={soundEnabled ? 'Couper le son' : 'Activer le son'}
           >
@@ -159,7 +159,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(500);
               onOpenProfile();
             }}
-            className="pressable flex h-11 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5"
+            className="pressable flex h-10 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5 md:h-11"
             title="Mon profil et promotion"
             aria-label="Ouvrir mon profil"
           >
@@ -179,22 +179,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </div>
           </button>
         </div>
-      </div>
-
-      {/* XP progress toward next level (not a page loader) */}
-      <div
-        className="h-[3px] w-full overflow-hidden bg-clay-border/35"
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={rankInfo.progressPercent}
-        aria-label={`Progression XP vers le niveau ${rankInfo.level + 1}`}
-        title={`XP : niveau ${rankInfo.level} → ${rankInfo.level + 1} (${rankInfo.progressPercent}%)`}
-      >
-        <div
-          className="h-full origin-left bg-terracotta transition-[width] duration-700 ease-out"
-          style={{ width: `${Number.isFinite(rankInfo.progressPercent) ? rankInfo.progressPercent : 0}%` }}
-        />
       </div>
     </header>
   );

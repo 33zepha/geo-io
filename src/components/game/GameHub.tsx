@@ -176,25 +176,21 @@ export const GameHub: React.FC<GameHubProps> = ({
     {
       id: 'clic_carte' as GameModeType,
       title: 'Pointage sur carte',
-      description: 'Clique directement sur le territoire demandé.',
       icon: <Target className="w-4 h-4 text-terracotta" />,
     },
     {
       id: 'qcm' as GameModeType,
       title: 'Quiz QCM',
-      description: 'Trouve la bonne réponse parmi 4 propositions.',
       icon: <CheckSquare className="w-4 h-4 text-lagon" />,
     },
     {
       id: 'silhouette' as GameModeType,
       title: 'Défi Silhouette',
-      description: 'Identifie le département isolé par ses contours.',
       icon: <Shapes className="w-4 h-4 text-honey-dark" />,
     },
     {
       id: 'enquete_logique' as GameModeType,
       title: 'Enquête territoriale',
-      description: 'Devine le territoire mystère grâce aux indices.',
       icon: <FileSearch className="w-4 h-4 text-sage" />,
     },
   ];
@@ -202,26 +198,18 @@ export const GameHub: React.FC<GameHubProps> = ({
   const difficultyList: {
     id: GameDifficulty;
     title: string;
-    description: string;
-    tag: string;
   }[] = [
     {
       id: 'debutant',
       title: 'Débutant',
-      description: 'Grands repères, métropoles & régions célèbres.',
-      tag: 'Initiation',
     },
     {
       id: 'intermediaire',
       title: 'Intermédiaire',
-      description: 'Les 101 départements, préfectures & numéros.',
-      tag: 'Standard',
     },
     {
       id: 'expert',
       title: 'Expert',
-      description: 'Pièges classiques, sous-préfectures & repères cultes.',
-      tag: 'Défi',
     },
   ];
 
@@ -241,13 +229,10 @@ export const GameHub: React.FC<GameHubProps> = ({
             className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-start space-y-4 overflow-y-auto overscroll-contain px-0.5 scrollbar-thin sm:justify-center sm:space-y-5"
           >
             {/* Header Title */}
-            <motion.div variants={itemVariants} className="space-y-1.5 text-center">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-clay font-display tracking-tight">
+            <motion.div variants={itemVariants} className="text-center">
+              <h1 className="font-display text-xl font-extrabold tracking-tight text-clay sm:text-2xl">
                 Configuration de partie
               </h1>
-              <p className="mx-auto max-w-md text-sm leading-relaxed text-clay-muted sm:text-xs">
-                Choisis ta mécanique de jeu, tes paramètres et lance ton défi.
-              </p>
             </motion.div>
 
             {/* Catch-up Banner if active */}
@@ -261,11 +246,8 @@ export const GameHub: React.FC<GameHubProps> = ({
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div className="truncate">
-                    <p className="text-xs font-bold text-clay truncate">
-                      Session de rattrapage activée ({catchUpCodes.length} département{catchUpCodes.length > 1 ? 's' : ''})
-                    </p>
-                    <p className="text-[11px] text-clay-muted truncate">
-                      Ciblée sur vos erreurs récentes pour une progression rapide.
+                    <p className="truncate text-xs font-bold text-clay">
+                      Rattrapage · {catchUpCodes.length} département{catchUpCodes.length > 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
@@ -311,13 +293,13 @@ export const GameHub: React.FC<GameHubProps> = ({
                           if (isLockedByCatchUp) return;
                           setSettings({ ...settings, mode: m.id });
                         }}
-                        className={`pressable flex min-h-[5.25rem] cursor-pointer flex-col justify-between rounded-2xl border p-3.5 text-left transition ${
+                        className={`pressable flex min-h-[4.5rem] cursor-pointer flex-col justify-center rounded-2xl border p-3.5 text-left transition ${
                           isSelected
                             ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs ring-1 ring-terracotta/20'
                             : 'bg-white/80 border-clay-border hover:bg-white text-clay'
                         }`}
                       >
-                        <div className="mb-2 flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5">
                           <div className={`rounded-lg p-2 ${
                             isSelected ? 'bg-terracotta-light' : 'bg-creme-100'
                           }`}>
@@ -327,9 +309,6 @@ export const GameHub: React.FC<GameHubProps> = ({
                             {m.title}
                           </span>
                         </div>
-                        <p className="text-[11px] text-clay-muted leading-tight line-clamp-2">
-                          {m.description}
-                        </p>
                       </button>
                     );
                   })}
@@ -425,7 +404,6 @@ export const GameHub: React.FC<GameHubProps> = ({
                           }`}
                         >
                           <span className="text-xs font-bold">{d.title}</span>
-                          <span className="text-[10px] text-clay-subtle">{d.tag}</span>
                         </button>
                       );
                     })}
