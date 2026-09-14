@@ -270,26 +270,39 @@ function syncGameStatsWithCloud(
 
     void (async () => {
       try {
-        const { data: cloudRow } = await client
+        const { data: cloudRow, error: cloudError } = await client
           .from('profiles')
           .select('xp, level, streak, mastered_depts, accuracy')
           .eq('id', userId)
           .maybeSingle();
 
-        const cloudXp = Number(cloudRow?.xp) || 0;
+        // If we cannot read the cloud floor, refuse to write progress fields.
+        // Treating a failed/missing read as xp=0 was wiping high scores.
+        if (cloudError || !cloudRow) {
+          console.warn('Game cloud sync aborted: cloud profile unread', cloudError);
+          await client.from('scores').insert({
+            user_id: userId,
+            mode,
+            score,
+            accuracy: questionCount > 0 ? Math.round((correctCount / questionCount) * 100) : 100,
+          });
+          return;
+        }
+
+        const cloudXp = Math.max(0, Number(cloudRow.xp) || 0);
         const safeXp = Math.max(cloudXp, stats.xp || 0, sessionXp);
         const safeLevel = Math.max(
-          Number(cloudRow?.level) || 1,
+          Number(cloudRow.level) || 1,
           stats.level || 1,
           getRankForXp(safeXp).level
         );
-        const safeStreak = Math.max(Number(cloudRow?.streak) || 1, stats.streak || 1);
+        const safeStreak = Math.max(Number(cloudRow.streak) || 1, stats.streak || 1);
         const safeMastered = Math.max(
-          Number(cloudRow?.mastered_depts) || 0,
+          Number(cloudRow.mastered_depts) || 0,
           masteredCount
         );
         const safeAccuracy = Math.max(
-          Number(cloudRow?.accuracy) || 0,
+          Number(cloudRow.accuracy) || 0,
           accuracy
         );
 
@@ -302,17 +315,20 @@ function syncGameStatsWithCloud(
           savePlayerStats(mergedLocal);
         }
 
-        await client
-          .from('profiles')
-          .update({
-            xp: safeXp,
-            level: safeLevel,
-            streak: safeStreak,
-            mastered_depts: safeMastered,
-            accuracy: safeAccuracy,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', userId);
+        // Only bump progress upward — never send a lower absolute XP payload.
+        if (safeXp > cloudXp || safeMastered > Number(cloudRow.mastered_depts || 0) || safeAccuracy > Number(cloudRow.accuracy || 0)) {
+          await client
+            .from('profiles')
+            .update({
+              xp: safeXp,
+              level: safeLevel,
+              streak: safeStreak,
+              mastered_depts: safeMastered,
+              accuracy: safeAccuracy,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+        }
 
         await client.from('scores').insert({
           user_id: userId,

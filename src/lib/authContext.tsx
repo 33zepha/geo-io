@@ -74,7 +74,9 @@ async function loadAuthenticatedProfile(authUser: User): Promise<UserProfile> {
 
   const profile = generateDefaultProfile(authUser.email, authUser.user_metadata?.pseudo);
   profile.id = authUser.id;
-  const { error: insertError } = await supabase.from('profiles').upsert({
+  // Insert-only: never upsert XP/level — a race that "misses" an existing row
+  // used to overwrite high cloud progress with fresh localStorage (0 XP).
+  const { error: insertError } = await supabase.from('profiles').insert({
     id: profile.id,
     pseudo: profile.pseudo,
     avatar_id: profile.avatarId,
@@ -85,9 +87,21 @@ async function loadAuthenticatedProfile(authUser: User): Promise<UserProfile> {
     streak: profile.streak,
     mastered_depts: profile.masteredDeptsCount,
     accuracy: profile.accuracy,
-  }, { onConflict: 'id' });
+  });
 
-  if (insertError) throw insertError;
+  if (insertError) {
+    // Profile already exists (race / concurrent login) — reload the real cloud row.
+    if (insertError.code === '23505') {
+      const { data: existing, error: reloadError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle();
+      if (reloadError) throw reloadError;
+      if (existing) return profileFromRow(existing, authUser);
+    }
+    throw insertError;
+  }
   return profile;
 }
 
