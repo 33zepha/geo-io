@@ -1,13 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PlayerStats } from '../../types/geo';
 import { BADGES } from '../../data/badges';
 import { getRankForXp } from '../../lib/storage';
 import { useAuth } from '../../lib/authContext';
 import { getAvatarById } from '../../data/avatars';
 import { AvatarPicker } from './AvatarPicker';
-import { X, Trophy, Flame, Target, BookOpen, Award, CheckCircle2, User, LogOut, LogIn, Edit2, Save, MapPin } from 'lucide-react';
+import {
+  X,
+  Flame,
+  Target,
+  BookOpen,
+  Award,
+  CheckCircle2,
+  LogOut,
+  LogIn,
+  Edit2,
+  Save,
+  MapPin,
+  ArrowLeft,
+  GraduationCap,
+} from 'lucide-react';
 import { soundManager } from '../../lib/audio';
 
 interface ProfileModalProps {
@@ -25,282 +39,410 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 }) => {
   const { user, isAuthenticated, signOut, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [pseudo, setPseudo] = useState(user?.pseudo || 'Étudiant');
   const [avatarId, setAvatarId] = useState(user?.avatarId || 'boussole');
   const [favoriteDept, setFavoriteDept] = useState(user?.favoriteDept || '75');
   const [university, setUniversity] = useState(user?.university || '');
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsEditing(false);
+    setIsSaving(false);
+    setPseudo(user?.pseudo || 'Étudiant');
+    setAvatarId(user?.avatarId || 'boussole');
+    setFavoriteDept(user?.favoriteDept || '75');
+    setUniversity(user?.university || '');
+  }, [isOpen, user]);
+
   if (!isOpen) return null;
 
   const rankInfo = getRankForXp(stats.xp);
-  const activeAvatar = getAvatarById(user?.avatarId || 'boussole');
+  const activeAvatar = getAvatarById(user?.avatarId || avatarId || 'boussole');
 
-  const accuracy = stats.totalQuestions > 0
-    ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
-    : 85;
+  const accuracy =
+    stats.totalQuestions > 0
+      ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
+      : 0;
 
   const masteredDeptsCount = Object.values(stats.departmentStats || {}).filter(
     (d) => d.correct >= 1
   ).length;
 
+  const xpRemaining = Math.max(0, rankInfo.nextLevelXp - rankInfo.currentLevelXp);
+
   const handleSaveProfile = async () => {
-    soundManager.playSuccess(2);
-    await updateProfile({
-      pseudo,
-      avatarId,
-      favoriteDept,
-      university,
-    });
+    if (!isAuthenticated || !pseudo.trim()) {
+      soundManager.playError();
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateProfile({
+        pseudo: pseudo.trim(),
+        avatarId,
+        favoriteDept,
+        university: university.trim(),
+      });
+      soundManager.playSuccess(2);
+      setIsEditing(false);
+    } catch {
+      soundManager.playError();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    soundManager.playClick(380);
+    setPseudo(user?.pseudo || 'Étudiant');
+    setAvatarId(user?.avatarId || 'boussole');
+    setFavoriteDept(user?.favoriteDept || '75');
+    setUniversity(user?.university || '');
     setIsEditing(false);
   };
 
+  const metrics = [
+    {
+      icon: Flame,
+      value: `${stats.streak} j`,
+      label: 'Série',
+      iconClass: 'text-honey fill-honey/20',
+    },
+    {
+      icon: Target,
+      value: `${accuracy}%`,
+      label: 'Précision',
+      iconClass: 'text-terracotta',
+    },
+    {
+      icon: BookOpen,
+      value: String(stats.totalGames),
+      label: 'Parties',
+      iconClass: 'text-lagon',
+    },
+    {
+      icon: CheckCircle2,
+      value: `${masteredDeptsCount}`,
+      label: 'Maîtrisés',
+      iconClass: 'text-sage',
+    },
+  ];
+
+  const records = [
+    { label: 'Pointage', value: stats.highScorePointage, color: 'text-terracotta' },
+    { label: 'Enquête', value: stats.highScoreMaster, color: 'text-lagon' },
+    { label: 'Silhouette', value: stats.highScoreSilhouette || 0, color: 'text-honey-dark' },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-clay/40 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white border-2 border-clay-border rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-soft-lg space-y-6 relative">
-        {/* Close Button */}
-        <button
-          onClick={() => {
-            soundManager.playClick(400);
-            onClose();
-          }}
-          className="absolute top-5 right-5 p-2.5 rounded-2xl bg-creme-200 hover:bg-creme-300 text-clay-muted hover:text-clay transition cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in sm:items-center sm:p-4">
+      <button
+        type="button"
+        className="absolute inset-0 cursor-default"
+        aria-label="Fermer le profil"
+        onClick={() => {
+          soundManager.playClick(360);
+          onClose();
+        }}
+      />
 
-        {/* Profile Header with Avatar & Details */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {/* Avatar Emblème */}
-            <div className="w-18 h-18 rounded-3xl bg-gradient-to-tr from-amber-400 to-terracotta p-1 shadow-sm shrink-0">
-              <div className="w-full h-full bg-white rounded-[20px] flex items-center justify-center text-3xl shadow-inner">
-                {activeAvatar.emoji}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-display font-extrabold uppercase tracking-wider text-terracotta">
-                  {activeAvatar.title}
-                </span>
-                {user?.favoriteDept && (
-                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-mono font-bold border border-amber-300">
-                    <MapPin className="w-2.5 h-2.5 text-amber-700" />
-                    <span>Dép. {user.favoriteDept}</span>
-                  </span>
-                )}
-              </div>
-
-              <h2 className="text-xl sm:text-2xl font-extrabold text-clay font-display tracking-tight">
-                {user?.pseudo || rankInfo.title}
-              </h2>
-
-              <p className="text-xs text-clay-muted font-medium flex flex-wrap items-center gap-2 mt-0.5">
-                <span>Niveau {rankInfo.level} • {stats.xp.toLocaleString('fr-FR')} XP</span>
-                {user?.email && (
-                  <>
-                    <span>•</span>
-                    <span className="text-clay-muted">{user.email}</span>
-                  </>
-                )}
-                {user?.university && (
-                  <>
-                    <span>•</span>
-                    <span className="text-clay font-semibold">{user.university}</span>
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Action buttons (Edit Profile / Sign out) */}
-          <div className="flex items-center gap-2">
+      <div
+        className="panel-enter relative z-10 flex max-h-[min(92dvh,42rem)] w-full max-w-[min(100%,35rem)] flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {/* Top bar */}
+        <div className="flex shrink-0 items-center justify-between border-b border-clay-border/60 px-4 py-3 sm:px-5">
+          {isEditing ? (
             <button
-              onClick={() => {
-                soundManager.playClick(420);
-                setIsEditing(!isEditing);
-              }}
-              className="px-3.5 py-2 rounded-xl bg-creme-100 hover:bg-creme-200 border border-clay-border text-clay text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              type="button"
+              onClick={handleCancelEdit}
+              className="pressable flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-bold text-clay-muted transition hover:bg-creme-100 hover:text-clay"
             >
-              <Edit2 className="w-3.5 h-3.5" />
-              <span>{isEditing ? 'Fermer' : 'Modifier profil'}</span>
+              <ArrowLeft className="h-4 w-4" />
+              Retour
             </button>
+          ) : (
+            <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-clay-subtle">
+              Mon profil
+            </div>
+          )}
 
-            {isAuthenticated ? (
-              <button
-                onClick={async () => {
-                  soundManager.playClick(380);
-                  await signOut();
-                  onClose();
-                }}
-                className="p-2 rounded-xl bg-creme-100 hover:bg-coral-light hover:text-coral-dark text-clay-muted transition cursor-pointer"
-                title="Se déconnecter"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            ) : (
-              onOpenAuth && (
-                <button
-                  onClick={() => {
-                    soundManager.playClick(460);
-                    onOpenAuth();
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-terracotta hover:bg-terracotta-dark text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Connexion</span>
-                </button>
-              )
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              soundManager.playClick(400);
+              onClose();
+            }}
+            className="pressable rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay"
+            title="Fermer"
+            aria-label="Fermer"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Profile Customization Form (when isEditing is true) */}
-        {isEditing && (
-          <div className="bg-creme-50 p-5 rounded-2xl border-2 border-clay-border space-y-4 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-clay-border/60 pb-2.5">
-              <h3 className="text-sm font-display font-bold text-clay flex items-center gap-2">
-                <span>🎨 Personnalisation de votre identité étudiante</span>
-              </h3>
-              <button
-                onClick={handleSaveProfile}
-                className="px-3 py-1.5 rounded-xl bg-sage hover:bg-sage-dark text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>Enregistrer</span>
-              </button>
-            </div>
+        {isEditing ? (
+          <>
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4 scrollbar-thin sm:px-5">
+              <div>
+                <h2 className="font-display text-lg font-extrabold tracking-tight text-clay">
+                  Modifier mon identité
+                </h2>
+                <p className="mt-0.5 text-xs text-clay-muted">
+                  Pseudo, emblème et infos visibles au classement.
+                </p>
+              </div>
 
-            <div>
-              <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted mb-1">
-                Pseudo affiché au classement
-              </label>
-              <input
-                type="text"
-                value={pseudo}
-                onChange={(e) => setPseudo(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-clay-border text-xs font-semibold text-clay focus:outline-none focus:border-terracotta"
+              <div className="space-y-1.5">
+                <label className="block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+                  Pseudo au classement
+                </label>
+                <input
+                  type="text"
+                  value={pseudo}
+                  maxLength={24}
+                  onChange={(e) => setPseudo(e.target.value)}
+                  className="w-full rounded-xl border border-clay-border bg-creme-100/50 px-3 py-2.5 text-sm font-semibold text-clay transition focus:border-terracotta focus:bg-white focus:outline-none"
+                />
+              </div>
+
+              <AvatarPicker
+                selectedAvatarId={avatarId}
+                selectedFavoriteDept={favoriteDept}
+                university={university}
+                onSelectAvatar={setAvatarId}
+                onSelectFavoriteDept={setFavoriteDept}
+                onChangeUniversity={setUniversity}
               />
             </div>
 
-            <AvatarPicker
-              selectedAvatarId={avatarId}
-              selectedFavoriteDept={favoriteDept}
-              university={university}
-              onSelectAvatar={setAvatarId}
-              onSelectFavoriteDept={setFavoriteDept}
-              onChangeUniversity={setUniversity}
-            />
-          </div>
-        )}
-
-        {/* Level XP Bar */}
-        <div className="space-y-2 bg-creme-100 p-4 rounded-2xl border border-clay-border">
-          <div className="flex justify-between text-xs font-display font-bold">
-            <span className="text-clay">Progression vers le niveau {rankInfo.level + 1}</span>
-            <span className="text-terracotta font-extrabold">{rankInfo.progressPercent}%</span>
-          </div>
-          <div className="w-full bg-white rounded-full h-3 overflow-hidden border border-clay-border">
-            <div
-              className="bg-gradient-to-r from-terracotta to-honey h-full rounded-full transition-all duration-500"
-              style={{ width: `${rankInfo.progressPercent}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-[11px] font-mono text-clay-subtle">
-            <span>{rankInfo.currentLevelXp} XP</span>
-            <span>{rankInfo.nextLevelXp} XP nécessaires</span>
-          </div>
-        </div>
-
-        {/* Key Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-creme-100 p-3.5 rounded-2xl border border-clay-border text-center">
-            <Flame className="w-5 h-5 text-honey mx-auto mb-1 fill-honey/20" />
-            <div className="text-xl font-display font-extrabold text-clay">{stats.streak} j</div>
-            <div className="text-[10px] font-display font-bold text-clay-muted uppercase">Série</div>
-          </div>
-
-          <div className="bg-creme-100 p-3.5 rounded-2xl border border-clay-border text-center">
-            <Target className="w-5 h-5 text-terracotta mx-auto mb-1" />
-            <div className="text-xl font-display font-extrabold text-clay">{accuracy}%</div>
-            <div className="text-[10px] font-display font-bold text-clay-muted uppercase">Précision</div>
-          </div>
-
-          <div className="bg-creme-100 p-3.5 rounded-2xl border border-clay-border text-center">
-            <BookOpen className="w-5 h-5 text-lagon mx-auto mb-1" />
-            <div className="text-xl font-display font-extrabold text-clay">{stats.totalGames}</div>
-            <div className="text-[10px] font-display font-bold text-clay-muted uppercase">Parties</div>
-          </div>
-
-          <div className="bg-creme-100 p-3.5 rounded-2xl border border-clay-border text-center">
-            <CheckCircle2 className="w-5 h-5 text-sage mx-auto mb-1" />
-            <div className="text-xl font-display font-extrabold text-clay">{masteredDeptsCount} / 101</div>
-            <div className="text-[10px] font-display font-bold text-clay-muted uppercase">Maîtrisés</div>
-          </div>
-        </div>
-
-        {/* High Scores Summary */}
-        <div className="bg-creme-100 p-4 rounded-2xl border border-clay-border space-y-2">
-          <div className="text-xs font-display font-bold uppercase tracking-wider text-clay-muted mb-2">
-            Records Personnels
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-white p-2.5 rounded-xl border border-clay-border/60">
-              <div className="text-xs text-clay-muted font-medium">Pointage</div>
-              <div className="font-display font-extrabold text-terracotta text-sm sm:text-base">
-                {stats.highScorePointage} pts
-              </div>
-            </div>
-            <div className="bg-white p-2.5 rounded-xl border border-clay-border/60">
-              <div className="text-xs text-clay-muted font-medium">Enquête</div>
-              <div className="font-display font-extrabold text-lagon text-sm sm:text-base">
-                {stats.highScoreMaster} pts
-              </div>
-            </div>
-            <div className="bg-white p-2.5 rounded-xl border border-clay-border/60">
-              <div className="text-xs text-clay-muted font-medium">Silhouette</div>
-              <div className="font-display font-extrabold text-honey text-sm sm:text-base">
-                {stats.highScoreSilhouette || 0} pts
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Badges Collection */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-terracotta" />
-              <h3 className="font-display font-bold text-sm text-clay">
-                Insignes Géographiques ({stats.unlockedBadges.length} / {BADGES.length})
-              </h3>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {BADGES.map((badge) => {
-              const isUnlocked = stats.unlockedBadges.includes(badge.id);
-              return (
-                <div
-                  key={badge.id}
-                  className={`p-3 rounded-2xl border text-center transition ${
-                    isUnlocked
-                      ? 'bg-creme-100 border-clay-border'
-                      : 'bg-creme-200/40 border-dashed border-clay-border/40 opacity-40 grayscale'
-                  }`}
+            <div className="shrink-0 border-t border-clay-border/70 bg-white px-4 py-3 sm:px-5">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="pressable flex-1 rounded-xl border border-clay-border bg-creme-100 py-2.5 text-xs font-bold text-clay transition hover:bg-creme-200"
                 >
-                  <div className="text-2xl mb-1">{badge.icon}</div>
-                  <div className="font-display font-bold text-xs text-clay truncate">
-                    {badge.title}
-                  </div>
-                  <div className="text-[10px] text-clay-muted mt-0.5 line-clamp-2 leading-tight">
-                    {badge.description}
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving || !pseudo.trim()}
+                  onClick={() => void handleSaveProfile()}
+                  className="btn-3d flex flex-[1.4] items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover disabled:opacity-50"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  {isSaving ? 'Enregistrement…' : 'Enregistrer'}
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4 scrollbar-thin sm:px-5">
+            {/* Hero identity */}
+            <section className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-left">
+              <div className="relative shrink-0">
+                <div className="h-20 w-20 rounded-[1.35rem] bg-gradient-to-br from-honey via-terracotta to-terracotta-dark p-[3px] shadow-soft">
+                  <div className="flex h-full w-full items-center justify-center rounded-[1.15rem] bg-white text-4xl shadow-inner">
+                    {activeAvatar.emoji}
                   </div>
                 </div>
-              );
-            })}
+                <div className="absolute -bottom-1 -right-1 rounded-full border border-honey/40 bg-honey-light px-1.5 py-0.5 font-mono text-[9px] font-extrabold text-honey-dark">
+                  Nv.{rankInfo.level}
+                </div>
+              </div>
+
+              <div className="mt-3 min-w-0 flex-1 sm:mt-0">
+                <div className="mb-1 flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
+                  <span className="font-display text-[10px] font-extrabold uppercase tracking-[0.14em] text-terracotta">
+                    {activeAvatar.title}
+                  </span>
+                  {user?.favoriteDept && (
+                    <span className="inline-flex items-center gap-0.5 rounded-full border border-honey/35 bg-honey-light px-2 py-0.5 font-mono text-[10px] font-bold text-honey-dark">
+                      <MapPin className="h-2.5 w-2.5" />
+                      {user.favoriteDept}
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="truncate font-display text-2xl font-extrabold tracking-tight text-clay">
+                  {user?.pseudo || 'Étudiant'}
+                </h2>
+
+                <p className="mt-0.5 text-xs font-medium text-clay-muted">
+                  {rankInfo.title} · {stats.xp.toLocaleString('fr-FR')} XP
+                </p>
+
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
+                  {user?.university && (
+                    <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-clay-border bg-creme-100 px-2 py-0.5 text-[10px] font-semibold text-clay">
+                      <GraduationCap className="h-3 w-3 shrink-0 text-clay-muted" />
+                      <span className="truncate">{user.university}</span>
+                    </span>
+                  )}
+                  {user?.email && (
+                    <span className="truncate text-[10px] text-clay-subtle">{user.email}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-3 flex shrink-0 items-center gap-2 sm:mt-0 sm:flex-col sm:items-stretch">
+                {isAuthenticated ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundManager.playClick(420);
+                        setIsEditing(true);
+                      }}
+                      className="pressable inline-flex items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-creme-100 px-3 py-2 text-xs font-bold text-clay transition hover:bg-creme-200"
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                      Modifier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        soundManager.playClick(380);
+                        await signOut();
+                        onClose();
+                      }}
+                      className="pressable inline-flex items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-white px-3 py-2 text-xs font-bold text-clay-muted transition hover:border-coral/30 hover:bg-coral-light hover:text-coral-dark"
+                      title="Se déconnecter"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                      <span className="sm:inline">Quitter</span>
+                    </button>
+                  </>
+                ) : (
+                  onOpenAuth && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        soundManager.playClick(460);
+                        onOpenAuth();
+                      }}
+                      className="btn-3d inline-flex items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta px-3 py-2 text-xs font-bold text-white"
+                    >
+                      <LogIn className="h-3.5 w-3.5" />
+                      Connexion
+                    </button>
+                  )
+                )}
+              </div>
+            </section>
+
+            {/* XP */}
+            <section className="rounded-2xl border border-clay-border bg-creme-100/80 p-4">
+              <div className="mb-2 flex items-end justify-between gap-2">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-clay-muted">
+                    Progression
+                  </div>
+                  <div className="font-display text-sm font-extrabold text-clay">
+                    Niveau {rankInfo.level}
+                    <span className="mx-1.5 text-clay-subtle">→</span>
+                    Niveau {rankInfo.level + 1}
+                  </div>
+                </div>
+                <div className="font-display text-lg font-extrabold text-terracotta">
+                  {rankInfo.progressPercent}%
+                </div>
+              </div>
+              <div className="h-2.5 overflow-hidden rounded-full border border-clay-border/80 bg-white">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-terracotta to-honey transition-[width] duration-700 ease-out"
+                  style={{
+                    width: `${Number.isFinite(rankInfo.progressPercent) ? rankInfo.progressPercent : 0}%`,
+                  }}
+                />
+              </div>
+              <div className="mt-2 flex justify-between font-mono text-[10px] text-clay-subtle">
+                <span>{rankInfo.currentLevelXp} XP</span>
+                <span>encore {xpRemaining} XP</span>
+              </div>
+            </section>
+
+            {/* Stats strip */}
+            <section className="overflow-hidden rounded-2xl border border-clay-border bg-white">
+              <div className="grid grid-cols-4 divide-x divide-clay-border/70">
+                {metrics.map((metric) => {
+                  const Icon = metric.icon;
+                  return (
+                    <div key={metric.label} className="px-2 py-3 text-center">
+                      <Icon className={`mx-auto mb-1 h-4 w-4 ${metric.iconClass}`} />
+                      <div className="font-display text-base font-extrabold text-clay sm:text-lg">
+                        {metric.value}
+                      </div>
+                      <div className="text-[9px] font-bold uppercase tracking-wide text-clay-muted">
+                        {metric.label}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Records */}
+            <section>
+              <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-clay-muted">
+                Records personnels
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {records.map((record) => (
+                  <div
+                    key={record.label}
+                    className="rounded-2xl border border-clay-border bg-creme-100/70 px-2 py-3 text-center"
+                  >
+                    <div className="text-[10px] font-medium text-clay-muted">{record.label}</div>
+                    <div className={`font-display text-base font-extrabold sm:text-lg ${record.color}`}>
+                      {record.value}
+                      <span className="ml-0.5 text-[10px] font-bold text-clay-subtle">pts</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Badges */}
+            <section className="space-y-2.5 pb-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <Award className="h-4 w-4 text-terracotta" />
+                  <h3 className="font-display text-sm font-bold text-clay">Insignes</h3>
+                </div>
+                <span className="rounded-full bg-creme-100 px-2 py-0.5 font-mono text-[10px] font-bold text-clay-muted">
+                  {stats.unlockedBadges.length}/{BADGES.length}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {BADGES.map((badge) => {
+                  const isUnlocked = stats.unlockedBadges.includes(badge.id);
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`rounded-2xl border p-3 text-center transition ${
+                        isUnlocked
+                          ? 'border-clay-border bg-creme-100'
+                          : 'border-dashed border-clay-border/50 bg-creme-50 opacity-45 grayscale'
+                      }`}
+                    >
+                      <div className="mb-1 text-2xl leading-none">{badge.icon}</div>
+                      <div className="truncate font-display text-xs font-bold text-clay">
+                        {badge.title}
+                      </div>
+                      <div className="mt-0.5 line-clamp-2 text-[10px] leading-tight text-clay-muted">
+                        {badge.description}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

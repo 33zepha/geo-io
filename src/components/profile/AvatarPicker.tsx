@@ -29,12 +29,11 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* 1. Avatar Grid (12 curated cartographic avatars) */}
       <div>
-        <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted mb-2">
-          Choisissez votre emblème cartographique (12 avatars)
+        <label className="mb-2 block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+          Emblème cartographique
         </label>
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto p-1.5 rounded-2xl bg-creme-100/70 border border-clay-border/70">
+        <div className="grid max-h-60 grid-cols-3 gap-2.5 overflow-y-auto rounded-2xl border border-clay-border/70 bg-creme-100/60 p-2.5 scrollbar-thin sm:grid-cols-4">
           {AVATARS.map((avatar) => {
             const isSelected = avatar.id === selectedAvatarId;
             return (
@@ -45,24 +44,24 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
                   soundManager.playClick(440);
                   onSelectAvatar(avatar.id);
                 }}
-                className={`p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center text-center cursor-pointer relative group ${
+                className={`pressable relative flex flex-col items-center rounded-2xl border-2 p-2.5 text-center transition ${
                   isSelected
-                    ? 'bg-white border-terracotta shadow-sm scale-102 ring-2 ring-terracotta/20'
-                    : 'bg-white/80 hover:bg-white border-clay-border/60 hover:border-clay-border'
+                    ? 'scale-[1.02] border-terracotta bg-white shadow-sm ring-2 ring-terracotta/15'
+                    : 'border-clay-border/50 bg-white/90 hover:border-clay-border hover:bg-white'
                 }`}
               >
                 {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-terracotta text-white flex items-center justify-center">
-                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  <div className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-terracotta text-white">
+                    <Check className="h-2.5 w-2.5 stroke-[3]" />
                   </div>
                 )}
-                <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+                <div className="mb-1 text-2xl transition-transform group-hover:scale-110">
                   {avatar.emoji}
                 </div>
-                <div className="text-[11px] font-display font-bold text-clay truncate w-full">
+                <div className="w-full truncate font-display text-[11px] font-bold text-clay">
                   {avatar.name}
                 </div>
-                <div className="text-[9px] text-clay-muted truncate w-full font-medium">
+                <div className="w-full truncate text-[9px] font-medium text-clay-muted">
                   {avatar.title}
                 </div>
               </button>
@@ -71,11 +70,10 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
         </div>
       </div>
 
-      {/* 2. Favorite Department Badge */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted mb-1.5">
-            Département de cœur (affiché en badge)
+          <label className="mb-1.5 block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+            Département de cœur
           </label>
           <select
             value={selectedFavoriteDept}
@@ -83,7 +81,7 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
               soundManager.playClick(420);
               onSelectFavoriteDept(e.target.value);
             }}
-            className="w-full px-3 py-2 rounded-xl bg-white border border-clay-border text-xs font-medium text-clay focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta cursor-pointer"
+            className="w-full cursor-pointer rounded-xl border border-clay-border bg-white px-3 py-2.5 text-xs font-medium text-clay focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta"
           >
             {deptList.map((d) => (
               <option key={d.code} value={d.code}>
@@ -93,17 +91,16 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
           </select>
         </div>
 
-        {/* 3. University / Faculté Tag */}
         <div>
-          <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted mb-1.5">
-            Université / Faculté (facultatif)
+          <label className="mb-1.5 block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+            Université / Faculté
           </label>
           <input
             type="text"
             value={university}
             onChange={(e) => onChangeUniversity(e.target.value)}
-            placeholder="Ex: Paris 1 Panthéon-Sorbonne, Lyon 2..."
-            className="w-full px-3 py-2 rounded-xl bg-white border border-clay-border text-xs font-medium text-clay placeholder:text-clay-subtle focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
+            placeholder="Ex: Lyon 2, Paris 1…"
+            className="w-full rounded-xl border border-clay-border bg-white px-3 py-2.5 text-xs font-medium text-clay placeholder:text-clay-subtle focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta"
           />
         </div>
       </div>
