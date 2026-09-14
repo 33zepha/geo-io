@@ -23,6 +23,8 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { soundManager } from '../../lib/audio';
+import { fetchCompetition } from '../../lib/competitionService';
+import type { CompetitionOverview } from '../../types/competition';
 
 interface ProfileModalProps {
   stats: PlayerStats;
@@ -44,6 +46,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [avatarId, setAvatarId] = useState(user?.avatarId || 'boussole');
   const [favoriteDept, setFavoriteDept] = useState(user?.favoriteDept || '75');
   const [university, setUniversity] = useState(user?.university || '');
+  const [competition, setCompetition] = useState<CompetitionOverview | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -53,6 +56,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     setAvatarId(user?.avatarId || 'boussole');
     setFavoriteDept(user?.favoriteDept || '75');
     setUniversity(user?.university || '');
+    void fetchCompetition().then((result) => setCompetition(result.overview)).catch(() => setCompetition(null));
   }, [isOpen, user]);
 
   if (!isOpen) return null;
@@ -243,7 +247,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             {/* Hero identity */}
             <section className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-left">
               <div className="relative shrink-0">
-                <div className="h-20 w-20 rounded-[1.35rem] bg-gradient-to-br from-honey via-terracotta to-terracotta-dark p-[3px] shadow-soft">
+                <div className={`h-20 w-20 rounded-[1.35rem] p-[3px] shadow-soft ${competition?.rewards.some((reward) => reward.id === 'weekly-frame' && reward.unlocked) ? 'bg-gradient-to-br from-lagon via-honey to-terracotta' : 'bg-gradient-to-br from-honey via-terracotta to-terracotta-dark'}`}>
                   <div className="flex h-full w-full items-center justify-center rounded-[1.15rem] bg-white text-4xl shadow-inner">
                     {activeAvatar.emoji}
                   </div>
@@ -273,6 +277,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <p className="mt-0.5 text-xs font-medium text-clay-muted">
                   {rankInfo.title} · {stats.xp.toLocaleString('fr-FR')} XP
                 </p>
+
+                {competition?.enabled && (
+                  <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-honey/30 bg-honey-light px-2 py-0.5 text-[10px] font-bold text-honey-dark">
+                    🏆 {competition.weeklyPoints}/700 cette semaine
+                    {competition.rewards.some((reward) => reward.id === 'weekly-title' && reward.unlocked) ? ' · Cartographe régulier' : ''}
+                  </div>
+                )}
 
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
                   {user?.university && (

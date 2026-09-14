@@ -12,10 +12,27 @@ import {
 } from '../types/game';
 import { Department } from '../types/geo';
 
-function shuffle<T>(arr: T[]): T[] {
+export type RandomSource = () => number;
+
+export function createSeededRandom(seed: string): RandomSource {
+  let state = 2166136261;
+  for (let index = 0; index < seed.length; index += 1) {
+    state ^= seed.charCodeAt(index);
+    state = Math.imul(state, 16777619);
+  }
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffle<T>(arr: T[], random: RandomSource = Math.random): T[] {
   const res = [...arr];
   for (let i = res.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [res[i], res[j]] = [res[j], res[i]];
   }
   return res;
@@ -34,13 +51,14 @@ const BEGINNER_DEPT_CODES = [
 export function generateMapClickTargets(
   difficulty: GameDifficulty = 'intermediaire',
   count: number = 10,
-  regionCode?: string
+  regionCode?: string,
+  random: RandomSource = Math.random
 ): MapClickTarget[] {
   const takePadded = <T,>(pool: T[], n: number): T[] => {
     if (pool.length === 0) return [];
     const out: T[] = [];
     let i = 0;
-    const shuffled = shuffle(pool);
+    const shuffled = shuffle(pool, random);
     while (out.length < n) {
       out.push(shuffled[i % shuffled.length]);
       i += 1;
@@ -154,13 +172,14 @@ export function generateMapClickTargets(
 export function generateQcmQuestions(
   difficulty: GameDifficulty = 'intermediaire',
   count: number = 10,
-  regionCode?: string
+  regionCode?: string,
+  random: RandomSource = Math.random
 ): QcmQuestion[] {
   const questions: QcmQuestion[] = [];
 
   // If no specific region is requested and in Expert mode, use cult questions bank
   if (!regionCode && difficulty === 'expert') {
-    const expertCult = shuffle(CULT_QUESTIONS.filter((q) => q.difficulty === 'expert' || q.difficulty === 'intermediaire'));
+    const expertCult = shuffle(CULT_QUESTIONS.filter((q) => q.difficulty === 'expert' || q.difficulty === 'intermediaire'), random);
     for (const cq of expertCult.slice(0, count)) {
       questions.push({
         id: cq.id,
@@ -182,15 +201,15 @@ export function generateQcmQuestions(
   const basePool = regionCode && REGIONS[regionCode]
     ? DEPARTMENTS_LIST.filter((d) => d.regionCode === regionCode)
     : difficulty === 'debutant'
-      ? shuffle(BEGINNER_DEPT_CODES).map((c) => DEPARTMENTS[c]).filter(Boolean)
+      ? shuffle(BEGINNER_DEPT_CODES, random).map((c) => DEPARTMENTS[c]).filter(Boolean)
       : DEPARTMENTS_LIST;
 
-  const deptPool = shuffle(basePool);
+  const deptPool = shuffle(basePool, random);
 
   for (let i = 0; i < remainingNeeded && i < deptPool.length; i++) {
     const target = deptPool[i];
     const g = getDeptGrammar(target.code);
-    const questionType = Math.floor(Math.random() * 4);
+    const questionType = Math.floor(random() * 4);
 
     if (questionType === 0) {
       // "Quelle est la préfecture du/de la X ?"
@@ -202,14 +221,14 @@ export function generateQcmQuestions(
       );
 
       const distractorTowns: string[] = [];
-      for (const d of shuffle(sameRegionDepts)) {
+      for (const d of shuffle(sameRegionDepts, random)) {
         if (!distractorTowns.includes(d.prefecture) && d.prefecture !== target.prefecture) {
           distractorTowns.push(d.prefecture);
         }
         if (distractorTowns.length >= 3) break;
       }
       if (distractorTowns.length < 3) {
-        for (const d of shuffle(otherRegionDepts)) {
+        for (const d of shuffle(otherRegionDepts, random)) {
           if (!distractorTowns.includes(d.prefecture) && d.prefecture !== target.prefecture) {
             distractorTowns.push(d.prefecture);
           }
@@ -217,7 +236,7 @@ export function generateQcmQuestions(
         }
       }
 
-      const options = shuffle([target.prefecture, ...distractorTowns.slice(0, 3)]);
+      const options = shuffle([target.prefecture, ...distractorTowns.slice(0, 3)], random);
       questions.push({
         id: `qcm-pref-${target.code}-${i}`,
         title: `Quelle est la préfecture ${g.de} ?`,
@@ -233,20 +252,20 @@ export function generateQcmQuestions(
       const otherDepts = DEPARTMENTS_LIST.filter((d) => d.code !== target.code && d.regionCode !== target.regionCode);
 
       const distractorDepts: string[] = [];
-      for (const d of shuffle(sameRegionDepts)) {
+      for (const d of shuffle(sameRegionDepts, random)) {
         const dg = getDeptGrammar(d.code);
         distractorDepts.push(dg.withArticle);
         if (distractorDepts.length >= 3) break;
       }
       if (distractorDepts.length < 3) {
-        for (const d of shuffle(otherDepts)) {
+        for (const d of shuffle(otherDepts, random)) {
           const dg = getDeptGrammar(d.code);
           distractorDepts.push(dg.withArticle);
           if (distractorDepts.length >= 3) break;
         }
       }
 
-      const options = shuffle([g.withArticle, ...distractorDepts.slice(0, 3)]);
+      const options = shuffle([g.withArticle, ...distractorDepts.slice(0, 3)], random);
       questions.push({
         id: `qcm-city-dept-${target.code}-${i}`,
         title: `Dans quel département se situe la ville de ${target.prefecture} ?`,
@@ -259,8 +278,8 @@ export function generateQcmQuestions(
     } else if (questionType === 2) {
       // "Dans quelle région se trouve X ?"
       const correctReg = REGIONS[target.regionCode];
-      const otherRegs = shuffle(Object.values(REGIONS).filter((r) => r.code !== target.regionCode)).slice(0, 3);
-      const options = shuffle([correctReg.name, otherRegs[0].name, otherRegs[1].name, otherRegs[2].name]);
+      const otherRegs = shuffle(Object.values(REGIONS).filter((r) => r.code !== target.regionCode), random).slice(0, 3);
+      const options = shuffle([correctReg.name, otherRegs[0].name, otherRegs[1].name, otherRegs[2].name], random);
 
       questions.push({
         id: `qcm-reg-${target.code}-${i}`,
@@ -281,7 +300,7 @@ export function generateQcmQuestions(
       const correct =
         specs[0] || factOption || `Préfecture : ${target.prefecture}`;
       const otherSpecs: string[] = [];
-      for (const d of shuffle(DEPARTMENTS_LIST)) {
+      for (const d of shuffle(DEPARTMENTS_LIST, random)) {
         if (d.code === target.code) continue;
         for (const s of d.specialties || []) {
           if (s !== correct && !otherSpecs.includes(s)) otherSpecs.push(s);
@@ -290,7 +309,7 @@ export function generateQcmQuestions(
         if (otherSpecs.length >= 3) break;
       }
       while (otherSpecs.length < 3) otherSpecs.push(`Repère ${otherSpecs.length + 1}`);
-      const options = shuffle([correct, ...otherSpecs.slice(0, 3)]);
+      const options = shuffle([correct, ...otherSpecs.slice(0, 3)], random);
       questions.push({
         id: `qcm-spec-${target.code}-${i}`,
         title: `Quelle spécialité / signature est associée à ${getDeptGrammar(target.code).withArticle} ?`,
@@ -303,7 +322,7 @@ export function generateQcmQuestions(
     }
   }
 
-  return shuffle(questions).slice(0, count);
+  return shuffle(questions, random).slice(0, count);
 }
 
 // -------------------------------------------------------------
@@ -341,7 +360,8 @@ export interface SilhouetteRound {
 export function generateSilhouetteRounds(
   count: number = 10,
   regionCode?: string,
-  difficulty: GameDifficulty = 'intermediaire'
+  difficulty: GameDifficulty = 'intermediaire',
+  random: RandomSource = Math.random
 ): SilhouetteRound[] {
   const validPaths = regionCode && REGIONS[regionCode]
     ? DEPARTMENT_MAP_PATHS.filter((p) => REGIONS[regionCode].departments.includes(p.code))
@@ -350,7 +370,7 @@ export function generateSilhouetteRounds(
   const takePadded = <T,>(pool: T[], n: number): T[] => {
     if (pool.length === 0) return [];
     const out: T[] = [];
-    const shuffled = shuffle(pool);
+    const shuffled = shuffle(pool, random);
     let i = 0;
     while (out.length < n) {
       out.push(shuffled[i % shuffled.length]);
@@ -376,18 +396,18 @@ export function generateSilhouetteRounds(
 
     const distractorDepts: Department[] = [];
     const sameFirst = difficulty === 'expert' ? 3 : difficulty === 'debutant' ? 1 : 2;
-    for (const p of shuffle(sameRegionPaths)) {
+    for (const p of shuffle(sameRegionPaths, random)) {
       if (DEPARTMENTS[p.code]) distractorDepts.push(DEPARTMENTS[p.code]);
       if (distractorDepts.length >= sameFirst) break;
     }
-    for (const p of shuffle(otherPaths)) {
+    for (const p of shuffle(otherPaths, random)) {
       if (DEPARTMENTS[p.code] && !distractorDepts.some((d) => d.code === p.code)) {
         distractorDepts.push(DEPARTMENTS[p.code]);
       }
       if (distractorDepts.length >= 3) break;
     }
 
-    const options = shuffle([targetDept, ...distractorDepts.slice(0, 3)]);
+    const options = shuffle([targetDept, ...distractorDepts.slice(0, 3)], random);
     rounds.push({
       targetPath,
       targetDept,
@@ -554,7 +574,7 @@ const ENQUETES_LIST: EnqueteTerritoire[] = [
 ];
 
 
-function buildAutoEnquetes(): EnqueteTerritoire[] {
+function buildAutoEnquetes(random: RandomSource = Math.random): EnqueteTerritoire[] {
   const preferred = [
     '75','13','69','33','31','44','59','06','67','29',
     '35','34','74','83','38','63','21','76','57','11',
@@ -604,7 +624,7 @@ function buildAutoEnquetes(): EnqueteTerritoire[] {
   };
 
   for (const code of preferred) pushFromDept(code);
-  for (const d of shuffle(DEPARTMENTS_LIST)) {
+  for (const d of shuffle(DEPARTMENTS_LIST, random)) {
     if (out.length >= 36) break;
     pushFromDept(d.code);
   }
@@ -614,9 +634,10 @@ function buildAutoEnquetes(): EnqueteTerritoire[] {
 export function generateEnquetes(
   count: number = 5,
   difficulty: GameDifficulty = 'intermediaire',
-  regionCode?: string
+  regionCode?: string,
+  random: RandomSource = Math.random
 ): EnqueteTerritoire[] {
-  const auto = buildAutoEnquetes();
+  const auto = buildAutoEnquetes(random);
   let pool = [...ENQUETES_LIST, ...auto];
 
   // Deduplicate by targetCode (handmade first)
@@ -631,7 +652,7 @@ export function generateEnquetes(
   }
 
   // Difficulty: shuffle clue order; expert starts vaguer (we'll reverse clues)
-  pool = shuffle(pool).map((e) => {
+  pool = shuffle(pool, random).map((e) => {
     const clues = [...e.clues];
     if (difficulty === 'expert') {
       // put terroir/amenagement first (vaguer), urbaine last
@@ -650,7 +671,7 @@ export function generateEnquetes(
     return { ...e, clues };
   });
 
-  if (pool.length === 0) pool = shuffle(ENQUETES_LIST);
+  if (pool.length === 0) pool = shuffle(ENQUETES_LIST, random);
   const out: EnqueteTerritoire[] = [];
   let i = 0;
   while (out.length < count && pool.length > 0) {
@@ -660,4 +681,3 @@ export function generateEnquetes(
   }
   return out;
 }
-

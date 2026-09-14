@@ -14,17 +14,22 @@ import {
   BookOpen 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import type { CompetitionUpdate } from '../../types/competition';
 
 interface GameSummaryProps {
   summary: GameSessionSummary;
   onReplay: () => void;
   onBackToMenu: () => void;
+  competitionUpdate?: CompetitionUpdate | null;
+  competitionPending?: boolean;
 }
 
 export const GameSummary: React.FC<GameSummaryProps> = ({
   summary,
   onReplay,
   onBackToMenu,
+  competitionUpdate,
+  competitionPending,
 }) => {
   const incorrectResults = summary.results.filter((r) => !r.isCorrect);
 
@@ -64,6 +69,23 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
             <div className="text-[10px] font-bold text-clay-muted">Succès</div>
           </div>
         </div>
+
+        {(competitionPending || competitionUpdate) && (
+          <div className="rounded-xl border border-honey/30 bg-honey-light p-3 text-left">
+            <div className="flex items-center gap-1.5 font-display text-xs font-extrabold text-clay">
+              <Sparkles className="h-4 w-4 text-terracotta" /> Mission officielle
+            </div>
+            {competitionPending ? (
+              <p className="mt-1 text-[11px] text-clay-muted">Validation du résultat par le serveur…</p>
+            ) : (
+              <p className="mt-1 text-[11px] text-clay-muted">
+                {competitionUpdate!.newlyCompletedMissionIds.length > 0
+                  ? `${competitionUpdate!.newlyCompletedMissionIds.length} objectif(s) validé(s) · ${competitionUpdate!.overview.weeklyPoints}/700 points cette semaine · rang ${competitionUpdate!.overview.weeklyRank ? `#${competitionUpdate!.overview.weeklyRank}` : 'en calcul'}.`
+                  : 'Résultat validé. Ces objectifs étaient déjà acquis ; aucun point n’a été compté deux fois.'}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Review of Mistakes (Internally scrollable inside card) */}
         {incorrectResults.length > 0 ? (

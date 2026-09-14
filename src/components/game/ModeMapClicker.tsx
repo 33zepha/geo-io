@@ -64,12 +64,14 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         setResults((prev) => [
           ...prev,
           {
+            questionId: currentTarget.id,
             title: currentTarget.prompt,
             targetName: currentTarget.name,
             targetCode: currentTarget.code,
             isCorrect: true,
             scoreEarned: points,
             explanation: currentTarget.hint || currentTarget.subPrompt,
+            userAnswerCode: clickedCode,
           },
         ]);
       } else {
@@ -83,6 +85,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         setResults((prev) => [
           ...prev,
           {
+            questionId: currentTarget.id,
             title: currentTarget.prompt,
             targetName: currentTarget.name,
             targetCode: currentTarget.code,
@@ -92,6 +95,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
             userAnswer: clickedCode
               ? DEPARTMENTS[clickedCode]?.name || clickedCode
               : 'Temps écoulé',
+            userAnswerCode: clickedCode,
           },
         ]);
       }
@@ -152,7 +156,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
   if (!currentTarget) return null;
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain sm:gap-3 sm:overflow-hidden">
       <div className="flex shrink-0 flex-col gap-2.5 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-5 sm:py-3">
         <div className="flex min-w-0 items-start gap-3">
           <button
@@ -167,11 +171,11 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
             <X className="h-4 w-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="max-h-[4.5rem] overflow-y-auto font-display text-sm font-extrabold leading-snug text-clay sm:max-h-none sm:text-lg">
+            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay sm:text-lg">
               {currentTarget.prompt}
             </h2>
             {currentTarget.subPrompt && (
-              <p className="mt-1 max-h-12 overflow-y-auto text-xs leading-relaxed text-clay-muted sm:max-h-none">
+              <p className="mt-1 break-words text-xs leading-relaxed text-clay-muted">
                 {currentTarget.subPrompt}
               </p>
             )}
@@ -209,7 +213,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         </div>
       )}
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:p-3">
+      <div className="relative flex min-h-[19rem] flex-1 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:min-h-0 sm:flex-row sm:items-center sm:p-3">
         {isExpertTimed && !isAnswered && (
           <div className="absolute inset-x-3 top-12 z-20 h-1.5 overflow-hidden rounded-full bg-creme-200">
             <div
@@ -220,7 +224,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         )}
 
         <HeroicFranceMap
-          className="h-full max-h-full w-full max-w-full"
+          className="min-h-0 w-full flex-1 sm:h-full sm:max-h-full sm:max-w-full"
           interactive={!isAnswered}
           selectionMode="department"
           targetCode={isAnswered ? currentTarget.code : null}
@@ -231,9 +235,9 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         />
 
         {isAnswered && (
-          <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,24rem)] -translate-x-1/2 sm:bottom-4">
+          <div className="relative z-40 mt-2 w-full shrink-0 sm:absolute sm:bottom-4 sm:left-1/2 sm:mt-0 sm:w-[min(94%,24rem)] sm:-translate-x-1/2">
             <div
-              className={`flex items-center justify-between gap-3 rounded-2xl border p-3.5 shadow-md ${
+              className={`flex flex-col items-stretch gap-3 rounded-2xl border p-3.5 shadow-md sm:flex-row sm:items-center sm:justify-between ${
                 feedback?.isCorrect
                   ? 'border-sage/40 bg-sage-light text-sage-dark'
                   : 'border-coral/40 bg-coral-light text-coral-dark'
@@ -253,13 +257,13 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
                         ? 'Même région — presque !'
                         : 'Réponse attendue :'}
                   </div>
-                  <div className="truncate text-xs font-medium text-clay opacity-90">
+                  <div className="break-words text-xs font-medium text-clay opacity-90">
                     {currentTarget.prefecture
                       ? `${currentTarget.name} (${currentTarget.code}) • ${currentTarget.prefecture}`
                       : `${currentTarget.name} (${currentTarget.code})`}
                   </div>
                   {!feedback?.isCorrect && currentTarget.hint && (
-                    <div className="mt-0.5 truncate text-[11px] text-clay-muted">
+                    <div className="mt-0.5 break-words text-[11px] text-clay-muted">
                       Indice : {currentTarget.hint}
                     </div>
                   )}
@@ -269,7 +273,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
+                className="flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 self-end rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
               >
                 <span>{currentIndex + 1 >= targets.length ? 'Bilan' : 'Suivant'}</span>
                 <ArrowRight className="h-3.5 w-3.5" />

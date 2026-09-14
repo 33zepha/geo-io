@@ -10,7 +10,7 @@ import {
   getRegionViewBox,
 } from '../../data/franceRegionBoundaries';
 import { soundManager } from '../../lib/audio';
-import { RotateCcw, Search, Compass, ZoomIn, ZoomOut } from 'lucide-react';
+import { RotateCcw, Search, Compass } from 'lucide-react';
 
 const NOUVELLE_AQUITAINE_BOUNDARY_PATH = REGION_BOUNDARIES['75'].path.replaceAll('Z', '');
 
@@ -188,10 +188,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
   }, [currentView, activeRegion, isNarrow]);
 
   const viewBox = formatViewBox(baseViewBox);
-  const isZoomed =
-    currentView === 'idf' ||
-    ((currentView === 'region' || currentView === 'auto') && Boolean(activeRegion)) ||
-    camera.scale > 1.02;
+  const isManuallyZoomed = camera.scale > 1.02;
 
   const getViewportSize = useCallback(() => {
     const viewport = viewportRef.current;
@@ -665,12 +662,12 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative max-w-[760px] mx-auto select-none flex items-center justify-center touch-none ${className || 'w-full aspect-square'}`}
+      className={`relative mx-auto flex max-w-[760px] min-h-0 touch-none select-none flex-col items-stretch justify-start sm:items-center sm:justify-center ${className || 'w-full aspect-square'}`}
       onMouseMove={handleMouseMove}
       onWheel={handleWheel}
     >
-      {/* Tactical Floating Controls (Top Left) */}
-      <div className="absolute top-3.5 left-3.5 z-30 flex max-w-[calc(100%-1.75rem)] flex-wrap items-center gap-2 rounded-2xl border-2 border-clay-border/80 bg-white/95 p-2 shadow-soft backdrop-blur-md">
+      {/* Mobile controls stay in the layout so they never cover the map. */}
+      <div className="relative z-30 mb-2 flex w-full shrink-0 flex-wrap items-center gap-2 rounded-2xl border-2 border-clay-border/80 bg-white/95 p-2 shadow-soft backdrop-blur-md sm:absolute sm:left-3.5 sm:top-3.5 sm:mb-0 sm:w-auto sm:max-w-[calc(100%-1.75rem)]">
         {/* Regional Framing Toggle (if activeRegion provided) */}
         {activeRegion && (
           <button
@@ -713,37 +710,8 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           <span>{currentView === 'idf' ? 'IDF ✕' : 'Loupe IDF'}</span>
         </button>
 
-        <div className="flex items-center gap-0.5 rounded-xl border border-clay-border/70 bg-creme-100/80 p-0.5">
-          <button
-            type="button"
-            onClick={() => {
-              soundManager.playClick(380);
-              zoomBy(1 / 1.25);
-            }}
-            disabled={camera.scale <= MIN_CAMERA_SCALE + 0.01}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-clay transition enabled:hover:bg-white disabled:opacity-40"
-            title="Dézoomer"
-            aria-label="Dézoomer"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              soundManager.playClick(420);
-              zoomBy(1.25);
-            }}
-            disabled={camera.scale >= MAX_CAMERA_SCALE - 0.01}
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-clay transition enabled:hover:bg-white disabled:opacity-40"
-            title="Zoomer"
-            aria-label="Zoomer"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Reset Camera to Full France */}
-        {isZoomed && (
+        {/* Pinch and wheel handle zoom; reset appears only after a manual zoom. */}
+        {isManuallyZoomed && (
           <button
             type="button"
             onClick={() => {
@@ -763,7 +731,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
       {/* GPU camera: fixed SVG viewBox + CSS translate3d/scale on the stage */}
       <div
         ref={viewportRef}
-        className="absolute inset-0 overflow-hidden [contain:strict]"
+        className="relative min-h-0 w-full flex-1 overflow-hidden [contain:strict] sm:absolute sm:inset-0"
       >
         <div
           ref={stageRef}
@@ -772,7 +740,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
         >
           <svg
             viewBox={viewBox}
-            preserveAspectRatio={isNarrow ? 'xMidYMid slice' : 'xMidYMid meet'}
+            preserveAspectRatio="xMidYMid meet"
             className="h-full w-full overflow-hidden"
             xmlns="http://www.w3.org/2000/svg"
           >

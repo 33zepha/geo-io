@@ -57,12 +57,14 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       setResults((prev) => [
         ...prev,
         {
+          questionId: currentEnquete.id,
           title: `Enquête n°${currentIndex + 1}`,
           targetName: currentEnquete.targetName,
           targetCode: currentEnquete.targetCode,
           isCorrect: true,
           scoreEarned: earnedPoints,
           explanation: currentEnquete.explanation,
+          userAnswerCode: clickedCode,
         },
       ]);
     } else {
@@ -72,12 +74,14 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       setResults((prev) => [
         ...prev,
         {
+          questionId: currentEnquete.id,
           title: `Enquête n°${currentIndex + 1}`,
           targetName: currentEnquete.targetName,
           targetCode: currentEnquete.targetCode,
           isCorrect: false,
           scoreEarned: 0,
           explanation: currentEnquete.explanation,
+          userAnswerCode: clickedCode,
         },
       ]);
     }
@@ -111,7 +115,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
   if (!currentEnquete) return null;
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain sm:gap-3 md:overflow-hidden">
       {/* Top HUD */}
       <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -125,8 +129,8 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="min-w-0">
-            <h2 className="truncate font-display text-sm font-extrabold text-clay sm:text-base">
+          <div className="min-w-0 flex-1">
+            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay sm:text-base">
               Enquête #{currentIndex + 1} : Trouve le territoire mystère
             </h2>
           </div>
@@ -141,7 +145,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       </div>
 
       {/* Middle Stage: Split Clues (left) & Map (right) */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,38%)_minmax(0,1fr)] gap-2.5 overflow-hidden md:grid-cols-5 md:grid-rows-1 md:gap-3">
+      <div className="grid min-h-[35rem] flex-1 grid-cols-1 grid-rows-[minmax(15rem,2fr)_minmax(19rem,3fr)] gap-2.5 md:min-h-0 md:grid-cols-5 md:grid-rows-1 md:gap-3">
         {/* Clues Card (Left 2 cols) */}
         <div className="flex min-h-0 flex-col gap-2.5 overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3.5 shadow-sm md:col-span-2 md:max-h-none sm:p-4">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-clay-border/60 pb-2.5">
@@ -161,6 +165,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
                     setResults((prev) => [
                       ...prev,
                       {
+                        questionId: currentEnquete.id,
                         title: `Enquête : ${currentEnquete.targetName}`,
                         targetName: currentEnquete.targetName,
                         targetCode: currentEnquete.targetCode,
@@ -168,6 +173,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
                         scoreEarned: 0,
                         explanation: currentEnquete.explanation,
                         userAnswer: 'Passé',
+                        userAnswerCode: null,
                       },
                     ]);
                   }}
@@ -211,9 +217,9 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
         </div>
 
         {/* Map Container (Right 3 cols) */}
-        <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm md:col-span-3 sm:p-2">
+        <div className="relative flex min-h-0 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm md:col-span-3 md:flex-row md:items-center sm:p-2">
           <HeroicFranceMap
-            className="w-full h-full max-w-full max-h-full"
+            className="min-h-0 w-full flex-1 md:h-full md:max-h-full md:max-w-full"
             interactive={!isAnswered}
             targetCode={currentEnquete.targetCode}
             feedbackState={feedback}
@@ -221,11 +227,11 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
             onDepartmentClick={handleMapClick}
           />
 
-          {/* Answer Reveal Floating Overlay */}
+          {/* Mobile reveal stays in the layout so names and regions can wrap. */}
           {isAnswered && (
-            <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,24rem)] -translate-x-1/2 sm:bottom-3">
+            <div className="relative z-40 mt-2 w-full shrink-0 md:absolute md:bottom-3 md:left-1/2 md:mt-0 md:w-[min(94%,24rem)] md:-translate-x-1/2">
               <div
-                className={`p-3 rounded-xl border shadow-md flex items-center justify-between gap-3 ${
+                className={`flex flex-col items-stretch gap-3 rounded-xl border p-3 shadow-md sm:flex-row sm:items-center sm:justify-between ${
                   feedback?.isCorrect
                     ? 'bg-sage-light border-sage/40 text-sage-dark'
                     : 'bg-coral-light border-coral/40 text-coral-dark'
@@ -237,11 +243,11 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
                   ) : (
                     <XCircle className="w-5 h-5 text-coral shrink-0" />
                   )}
-                  <div className="truncate">
+                  <div className="min-w-0">
                     <div className="font-bold text-xs">
                       {feedback?.isCorrect ? 'Exact !' : 'Territoire mystère :'}
                     </div>
-                    <div className="text-xs text-clay opacity-90 truncate font-medium">
+                    <div className="break-words text-xs font-medium text-clay opacity-90">
                       {currentEnquete.targetName} ({currentEnquete.targetCode}) • {currentEnquete.regionName}
                     </div>
                   </div>
@@ -249,7 +255,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
 
                 <button
                   onClick={handleNext}
-                  className="px-3.5 py-1.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1 shrink-0 transition cursor-pointer"
+                  className="flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-1 self-end rounded-xl bg-terracotta px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
                 >
                   <span>{currentIndex + 1 >= enquetes.length ? 'Bilan' : 'Suivant'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />

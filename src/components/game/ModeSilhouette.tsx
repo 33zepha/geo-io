@@ -43,12 +43,14 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
       setResults((prev) => [
         ...prev,
         {
+          questionId: `silhouette-${targetDept.code}-${currentIndex}`,
           title: `Silhouette : ${targetGrammar.withArticle}`,
           targetName: targetDept.name,
           targetCode: targetDept.code,
           isCorrect: true,
           scoreEarned: Math.max(50, 100 - (showHint ? 25 : 0)),
           explanation: `C'est bien ${targetGrammar.withArticle} (${targetDept.code}), préfecture : ${targetDept.prefecture}.`,
+          userAnswerCode: currentRound.options[idx].code,
         },
       ]);
     } else {
@@ -56,6 +58,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
       setResults((prev) => [
         ...prev,
         {
+          questionId: `silhouette-${targetDept.code}-${currentIndex}`,
           title: `Silhouette : ${targetGrammar.withArticle}`,
           targetName: targetDept.name,
           targetCode: targetDept.code,
@@ -63,6 +66,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
           scoreEarned: 0,
           explanation: `C'était ${targetGrammar.withArticle} (${targetDept.code}), préfecture : ${targetDept.prefecture}.`,
           userAnswer: currentRound.options[idx].name,
+          userAnswerCode: currentRound.options[idx].code,
         },
       ]);
     }
