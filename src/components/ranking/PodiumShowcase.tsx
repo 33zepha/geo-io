@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { LeaderboardEntry } from '../../types/ranking';
 import { getAvatarById } from '../../data/avatars';
 import { Crown } from 'lucide-react';
@@ -11,24 +12,27 @@ interface PodiumShowcaseProps {
 }
 
 const rankStyles = [
-  'border-amber-300 bg-amber-50',
-  'border-slate-300 bg-slate-50',
-  'border-orange-200 bg-orange-50',
+  'border-honey/40 bg-honey-light sm:order-2 sm:-translate-y-1 sm:shadow-soft',
+  'border-clay-border bg-creme-100 sm:order-1',
+  'border-terracotta/30 bg-terracotta-light sm:order-3',
 ];
 
 export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUserId }) => {
   if (top3.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-end">
       {top3.map((entry, index) => {
         const avatar = getAvatarById(entry.user.avatarId);
         const isCurrent = entry.user.id === currentUserId;
 
         return (
-          <div
+          <motion.div
             key={entry.user.id}
-            className={`flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 ${rankStyles[index]}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className={`flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 ${rankStyles[index]} ${index === 0 ? 'sm:py-3.5' : ''}`}
           >
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-white text-xl shadow-xs">
               {avatar.emoji}
@@ -39,7 +43,7 @@ export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUse
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1 font-display text-xs font-extrabold text-clay">
-                {index === 0 && <Crown className="h-3.5 w-3.5 shrink-0 text-amber-500" />}
+                {index === 0 && <Crown className="h-3.5 w-3.5 shrink-0 text-honey" />}
                 <span className="truncate">{entry.user.pseudo}</span>
                 {isCurrent && <span className="text-[9px] uppercase text-terracotta">Vous</span>}
               </div>
@@ -50,7 +54,7 @@ export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUse
                 {entry.excellenceScore.toLocaleString('fr-FR')} pts
               </div>
             </div>
-          </div>
+          </motion.div>
         );
       })}
     </div>

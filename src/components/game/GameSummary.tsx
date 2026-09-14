@@ -34,9 +34,9 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
       <div className="w-full bg-white border border-clay-border/80 rounded-2xl p-4 sm:p-5 shadow-sm text-center flex flex-col justify-between max-h-full overflow-hidden space-y-3">
         {/* Grade & Trophy */}
         <div className="space-y-1 shrink-0">
-          <div className="inline-flex p-2 rounded-xl bg-honey-light text-honey-dark border border-honey/30 mb-1">
-            <Trophy className="w-6 h-6 text-honey fill-honey/20" />
-          </div>
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 320, damping: 18 }} className="mb-1 inline-flex rounded-xl border border-honey/30 bg-honey-light p-2 text-honey-dark">
+            <Trophy className="h-6 w-6 fill-honey/20 text-honey" />
+          </motion.div>
           <h1 className="text-lg sm:text-xl font-extrabold text-clay font-display leading-tight">
             {summary.grade}
           </h1>
@@ -108,7 +108,7 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
               soundManager.playClick(500);
               onReplay();
             }}
-            className="px-5 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="btn-3d flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta px-5 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Rejouer</span>
@@ -119,7 +119,7 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
               soundManager.playClick(440);
               onBackToMenu();
             }}
-            className="px-5 py-2.5 rounded-xl bg-white hover:bg-creme-50 border border-clay-border text-clay font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            className="pressable flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-white px-5 py-2.5 text-xs font-bold text-clay transition hover:bg-creme-50"
           >
             <Settings2 className="w-3.5 h-3.5 text-clay-muted" />
             <span>Changer de mode</span>

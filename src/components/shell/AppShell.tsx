@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PlayerStats } from '../../types/geo';
 import { loadPlayerStats, DEFAULT_STATS } from '../../lib/storage';
 import { AuthProvider, useAuth } from '../../lib/authContext';
@@ -43,7 +44,7 @@ const InnerAppShell: React.FC = () => {
     return (
       <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col items-center justify-center font-sans relative select-none">
         <CartographicBackground />
-        <div className="relative z-10 flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/70 border border-clay-border/60 backdrop-blur-md shadow-soft animate-in fade-in duration-150">
+        <div className="relative z-10 flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/70 border border-clay-border/60 backdrop-blur-md shadow-soft animate-panel-in">
           <div className="w-12 h-12 rounded-2xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta text-2xl font-bold animate-pulse">
             🏛️
           </div>
@@ -90,25 +91,35 @@ const InnerAppShell: React.FC = () => {
       />
 
       {/* Main Game Arena */}
-      <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-3 sm:px-5 py-2 sm:py-3 relative z-10 overflow-hidden flex flex-col items-center justify-center">
-        {activeTab === 'quiz' ? (
-          <GameHub 
-            key={resetKey} 
-            catchUpCodes={catchUpCodes}
-            onClearCatchUp={() => setCatchUpCodes(null)}
-          />
-        ) : activeTab === 'mastery' ? (
-          <MasteryMapScreen 
-            stats={stats}
-            onStartWeakPointsSession={handleStartWeakPoints}
-          />
-        ) : (
-          <LeaderboardScreen />
-        )}
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-center justify-center overflow-hidden px-3 py-2 sm:px-5 sm:py-3">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab === 'quiz' ? `quiz-${resetKey}` : activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="flex h-full min-h-0 w-full flex-col"
+          >
+            {activeTab === 'quiz' ? (
+              <GameHub
+                catchUpCodes={catchUpCodes}
+                onClearCatchUp={() => setCatchUpCodes(null)}
+              />
+            ) : activeTab === 'mastery' ? (
+              <MasteryMapScreen
+                stats={stats}
+                onStartWeakPointsSession={handleStartWeakPoints}
+              />
+            ) : (
+              <LeaderboardScreen />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Minimal Game Status Bar */}
-      <footer className="w-full h-7 shrink-0 border-t border-clay-border/40 px-4 text-[11px] text-clay-subtle hidden sm:flex items-center justify-between bg-white/40 backdrop-blur-xs relative z-10">
+      <footer className="w-full h-7 shrink-0 border-t border-clay-border/40 px-4 text-[11px] text-clay-subtle hidden sm:flex items-center justify-between bg-white/40 backdrop-blur-sm relative z-10">
         <span>Geo.io • Promotion L1 & Géographie française</span>
         <span>101 départements • Classement réel de la promo</span>
       </footer>

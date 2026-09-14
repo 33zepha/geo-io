@@ -84,8 +84,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const isDismissible = !isMandatoryGate && isAuthenticated;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-clay/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-white border-2 border-clay-border rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-soft-lg relative space-y-5">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in sm:items-center sm:p-4">
+      <div className="panel-enter relative flex max-h-[min(92dvh,40rem)] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl">
+      <div className="space-y-5 overflow-y-auto p-6 scrollbar-thin sm:p-7">
         {isDismissible && (
           <button
             type="button"
@@ -121,7 +122,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="button"
             onClick={() => changeTab('register')}
-            className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
+            className={`pressable flex-1 cursor-pointer rounded-lg py-2.5 transition-all ${
               tab === 'register'
                 ? 'bg-white text-clay shadow-xs border border-clay-border/40'
                 : 'text-clay-muted hover:text-clay'
@@ -132,7 +133,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="button"
             onClick={() => changeTab('login')}
-            className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
+            className={`pressable flex-1 cursor-pointer rounded-lg py-2.5 transition-all ${
               tab === 'login'
                 ? 'bg-white text-clay shadow-xs border border-clay-border/40'
                 : 'text-clay-muted hover:text-clay'
@@ -143,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {error && (
-          <div className="p-3 rounded-2xl bg-coral-light border border-coral/30 text-coral-dark text-xs font-medium leading-relaxed animate-in fade-in">
+          <div className="fade-rise rounded-2xl border border-coral/30 bg-coral-light p-3 text-xs font-medium leading-relaxed text-coral-dark">
             {error}
           </div>
         )}
@@ -212,7 +213,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-2xl bg-terracotta hover:bg-terracotta-dark disabled:opacity-50 text-white text-xs font-display font-bold shadow-soft transition flex items-center justify-center gap-2 cursor-pointer"
+            className="btn-3d flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3 font-display text-xs font-bold text-white shadow-soft transition hover:bg-terracotta-hover disabled:opacity-50"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -228,6 +229,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             🔒 Votre session reste enregistrée sur cet appareil jusqu’à la déconnexion.
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

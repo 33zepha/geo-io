@@ -218,7 +218,7 @@ export const GameHub: React.FC<GameHubProps> = ({
   const sortedRegions = Object.values(REGIONS).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
-    <div className="w-full h-full max-h-full flex flex-col items-center justify-center overflow-hidden">
+    <div className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden">
       <AnimatePresence mode="wait">
         {screen === 'menu' && (
           <motion.div 
@@ -227,7 +227,7 @@ export const GameHub: React.FC<GameHubProps> = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="w-full max-w-4xl mx-auto flex flex-col justify-center space-y-3 sm:space-y-4 max-h-full"
+            className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-center space-y-3 overflow-y-auto scrollbar-thin sm:space-y-4"
           >
             {/* Header Title */}
             <motion.div variants={itemVariants} className="text-center space-y-0.5">
@@ -243,10 +243,10 @@ export const GameHub: React.FC<GameHubProps> = ({
             {isCatchUpActive && catchUpCodes && catchUpCodes.length > 0 && (
               <motion.div
                 variants={itemVariants}
-                className="px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-clay flex items-center justify-between gap-3 shadow-xs shrink-0"
+                className="fade-rise flex shrink-0 items-center justify-between gap-3 rounded-xl border border-honey/30 bg-honey-light px-3.5 py-2.5 text-clay shadow-xs"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-lg bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 shrink-0">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-honey/40 bg-white text-honey-dark">
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div className="truncate">
@@ -270,7 +270,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                   </button>
                   <button
                     onClick={startGame}
-                    className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1"
+                    className="btn-3d flex cursor-pointer items-center gap-1 rounded-lg border-b-honey-dark bg-honey px-3 py-1 text-xs font-bold text-white shadow-xs transition hover:bg-honey-hover"
                   >
                     <span>Lancer</span>
                     <ArrowRight className="w-3 h-3" />
@@ -297,7 +297,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                           soundManager.playClick(440);
                           setSettings({ ...settings, mode: m.id });
                         }}
-                        className={`p-3 rounded-xl text-left border transition cursor-pointer flex flex-col justify-between ${
+                        className={`pressable flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition ${
                           isSelected
                             ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs ring-1 ring-terracotta/20'
                             : 'bg-white/80 border-clay-border hover:bg-white text-clay'
@@ -450,7 +450,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                   {/* Launch CTA */}
                   <button
                     onClick={startGame}
-                    className="w-full py-3 rounded-xl bg-terracotta hover:bg-terracotta-hover active:translate-y-[1px] text-white font-display font-bold text-sm shadow-sm transition cursor-pointer flex items-center justify-center gap-2"
+                    className="btn-3d flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-b-terracotta-dark bg-terracotta py-3 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover"
                   >
                     <span>Lancer la partie</span>
                     <ArrowRight className="w-4 h-4" />
@@ -464,7 +464,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'clic_carte' && (
           <motion.div
             key="playing-clic"
-            className="w-full h-full max-h-full flex flex-col items-center justify-center overflow-hidden"
+            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -482,7 +482,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'qcm' && (
           <motion.div
             key="playing-qcm"
-            className="w-full h-full max-h-full flex flex-col items-center justify-center overflow-hidden"
+            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -500,7 +500,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'silhouette' && (
           <motion.div
             key="playing-silhouette"
-            className="w-full h-full max-h-full flex flex-col items-center justify-center overflow-hidden"
+            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -517,7 +517,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'enquete_logique' && (
           <motion.div
             key="playing-enquete"
-            className="w-full h-full max-h-full flex flex-col items-center justify-center overflow-hidden"
+            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -535,7 +535,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'summary' && summary && (
           <motion.div
             key="summary"
-            className="w-full h-full max-h-full flex flex-col items-center justify-center overflow-hidden"
+            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

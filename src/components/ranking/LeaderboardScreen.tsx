@@ -83,8 +83,9 @@ export const LeaderboardScreen: React.FC = () => {
 
       <div className="min-h-0 flex-1 overflow-y-auto py-2 pr-1">
         {isLoading ? (
-          <div className="flex h-full min-h-48 items-center justify-center text-sm font-medium text-clay-muted">
-            Chargement des profils réels…
+          <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-terracotta/20 border-t-terracotta" />
+            <div className="text-sm font-medium text-clay-muted">Chargement des profils réels…</div>
           </div>
         ) : loadError ? (
           <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-terracotta/20 bg-terracotta/5 px-6 text-center">
@@ -120,8 +121,8 @@ export const LeaderboardScreen: React.FC = () => {
                     return (
                       <div
                         key={entry.user.id}
-                        className={`grid grid-cols-12 items-center px-3 py-2 text-xs ${
-                          isCurrent ? 'bg-amber-50/70' : ''
+                        className={`fade-rise grid grid-cols-12 items-center px-3 py-2 text-xs transition-colors ${
+                          isCurrent ? 'bg-honey-light/80' : ''
                         }`}
                       >
                         <div className="col-span-2 text-center font-display font-extrabold text-clay-muted sm:col-span-1">

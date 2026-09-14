@@ -44,8 +44,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
-      <div className="mx-auto flex h-[3.75rem] max-w-5xl items-center justify-between gap-1.5 px-2 sm:px-5">
+    <header className="safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-1.5 px-2 sm:h-[3.75rem] sm:px-5">
         {/* Brand & Logo */}
         <button
           onClick={() => {
@@ -68,7 +68,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         {/* Center Navigation Tabs */}
         <nav
-          className="flex items-center gap-0.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1 text-xs font-semibold shadow-inner"
+          className="flex min-w-0 items-center gap-0.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1 text-xs font-semibold shadow-inner"
           aria-label="Navigation principale"
         >
           <button
@@ -79,9 +79,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'quiz' ? 'page' : undefined}
             aria-label="Quiz et défis"
             title="Quiz et défis"
-            className={`flex h-9 min-w-9 items-center justify-center gap-2 rounded-xl px-2 outline-none transition sm:min-w-10 md:px-3.5 ${
+            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
               activeTab === 'quiz'
-                ? 'bg-white font-bold text-clay shadow-[0_2px_8px_rgba(92,70,48,0.10)] ring-1 ring-clay-border/60'
+                ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30'
             }`}
           >
@@ -97,9 +97,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'mastery' ? 'page' : undefined}
             aria-label="Carte de maîtrise"
             title="Carte de maîtrise"
-            className={`flex h-9 min-w-9 items-center justify-center gap-2 rounded-xl px-2 outline-none transition sm:min-w-10 md:px-3.5 ${
+            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
               activeTab === 'mastery'
-                ? 'bg-white font-bold text-clay shadow-[0_2px_8px_rgba(92,70,48,0.10)] ring-1 ring-clay-border/60'
+                ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-sage/30'
             }`}
           >
@@ -120,9 +120,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'ranking' ? 'page' : undefined}
             aria-label="Classement de la promotion"
             title="Classement de la promotion"
-            className={`flex h-9 min-w-9 items-center justify-center gap-2 rounded-xl px-2 outline-none transition sm:min-w-10 md:px-3.5 ${
+            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
               activeTab === 'ranking'
-                ? 'bg-white font-bold text-clay shadow-[0_2px_8px_rgba(92,70,48,0.10)] ring-1 ring-clay-border/60'
+                ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-honey/30'
             }`}
           >
@@ -135,7 +135,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium">
           {/* Daily Streak */}
           <div
-            className="hidden h-9 items-center gap-1.5 rounded-xl border border-honey/25 bg-honey-light px-2.5 font-bold text-honey-dark lg:flex"
+            className="hidden h-10 items-center gap-1.5 rounded-xl border border-honey/25 bg-honey-light px-2.5 font-bold text-honey-dark lg:flex"
             title={`${stats.streak} jour(s) de suite`}
           >
             <Flame className="h-4 w-4 fill-honey text-honey" />
@@ -145,7 +145,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:h-10 sm:w-10"
+            className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30"
             title={soundEnabled ? 'Couper le son' : 'Activer le son'}
             aria-label={soundEnabled ? 'Couper le son' : 'Activer le son'}
           >
@@ -162,7 +162,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(500);
               onOpenProfile();
             }}
-            className="flex h-9 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:h-10 sm:px-2.5"
+            className="pressable flex h-10 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5"
             title="Mon profil et promotion"
             aria-label="Ouvrir mon profil"
           >
@@ -190,7 +190,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         title={`Progression vers le niveau ${rankInfo.level + 1} : ${rankInfo.progressPercent}%`}
       >
         <div
-          className="h-full bg-terracotta transition-all duration-500 ease-out"
+          className="h-full bg-terracotta transition-[width] duration-500 ease-soft"
           style={{ width: `${rankInfo.progressPercent}%` }}
         />
       </div>
