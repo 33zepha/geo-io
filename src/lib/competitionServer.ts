@@ -102,7 +102,10 @@ export async function getOverview(request: Request): Promise<CompetitionOverview
   const { dayKey, weekKey } = getParisCompetitionKeys();
   const previousWeek = new Date(`${weekKey}T12:00:00Z`);
   previousWeek.setUTCDate(previousWeek.getUTCDate() - 7);
-  await db.rpc('finalize_competition_week', { target_week: previousWeek.toISOString().slice(0, 10) });
+  const { error: finalizeError } = await db.rpc('finalize_competition_week', {
+    target_week: previousWeek.toISOString().slice(0, 10),
+  });
+  if (finalizeError) throw finalizeError;
   const [completionsResult, streakResult, standingsResult, rewardsResult] = await Promise.all([
     userId
       ? db.from('competition_mission_completions').select('mission_id, points').eq('user_id', userId).eq('day_key', dayKey)

@@ -31,6 +31,8 @@ export async function submitOfficialAttempt(attemptId: string, answers: Official
   const response = await fetch('/api/competition/attempt', { method: 'POST', headers: await headers(), body: JSON.stringify({ action: 'complete', attemptId, answers }) });
   if (!response.ok) throw new Error('Le serveur a refusé ce résultat.');
   const payload = await response.json();
-  const awardedPoints = payload.overview.dailyPoints;
+  const awardedPoints = payload.overview.missions
+    .filter((mission: CompetitionOverview['missions'][number]) => payload.result.fresh.includes(mission.id))
+    .reduce((total: number, mission: CompetitionOverview['missions'][number]) => total + mission.points, 0);
   return { awardedPoints, newlyCompletedMissionIds: payload.result.fresh, overview: payload.overview };
 }
