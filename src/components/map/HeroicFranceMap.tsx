@@ -68,7 +68,6 @@ const DepartmentPathItem = React.memo<DepartmentPathItemProps>(({
       style={{
         transformOrigin: `${dept.centroid[0]}px ${dept.centroid[1]}px`,
         transform: isHovered ? 'scale(1.025) translateY(-2.5px)' : 'scale(1) translateY(0)',
-        filter: isHovered ? 'url(#piece-lift-shadow)' : undefined,
         transition: 'transform 160ms cubic-bezier(0.2, 0, 0, 1), fill 160ms ease, stroke 160ms ease',
       }}
       className={interactive ? 'cursor-pointer active:scale-[0.99] active:translate-y-[0.5px]' : ''}
@@ -411,12 +410,6 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           <filter id="plateau-shadow" x="-10%" y="-10%" width="125%" height="125%">
             <feDropShadow dx="0" dy="16" stdDeviation="18" floodColor="#4F3622" floodOpacity="0.16" />
             <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#3D291C" floodOpacity="0.09" />
-          </filter>
-
-          {/* Piece Lift Elevation Drop-Shadow for hovered tactile puzzle tile */}
-          <filter id="piece-lift-shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#362214" floodOpacity="0.28" />
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#362214" floodOpacity="0.18" />
           </filter>
 
           {/* Medallion ambient shadow */}
