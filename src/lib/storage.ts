@@ -25,11 +25,12 @@ export function getRankForXp(xp: number): {
   nextLevelXp: number;
   progressPercent: number;
 } {
+  const safeXp = Number.isFinite(xp) ? Math.max(0, xp) : 0;
   let currentRank = RANKS[0];
   let nextRank = RANKS[1];
 
   for (let i = 0; i < RANKS.length; i++) {
-    if (xp >= RANKS[i].minXp) {
+    if (safeXp >= RANKS[i].minXp) {
       currentRank = RANKS[i];
       nextRank = RANKS[i + 1] || {
         level: currentRank.level + 1,
@@ -41,8 +42,8 @@ export function getRankForXp(xp: number): {
     }
   }
 
-  const range = nextRank.minXp - currentRank.minXp;
-  const inLevel = Math.max(0, xp - currentRank.minXp);
+  const range = Math.max(1, nextRank.minXp - currentRank.minXp);
+  const inLevel = Math.max(0, safeXp - currentRank.minXp);
   const progressPercent = Math.min(100, Math.round((inLevel / range) * 100));
 
   return {
@@ -92,6 +93,7 @@ export function savePlayerStats(stats: PlayerStats): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+    window.dispatchEvent(new CustomEvent('geo_io_stats_updated', { detail: stats }));
   } catch {}
 }
 

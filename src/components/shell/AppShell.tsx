@@ -26,6 +26,12 @@ const InnerAppShell: React.FC = () => {
     setStats(loadPlayerStats());
   }, [isProfileOpen, activeTab, resetKey]);
 
+  useEffect(() => {
+    const onStatsUpdated = () => setStats(loadPlayerStats());
+    window.addEventListener('geo_io_stats_updated', onStatsUpdated);
+    return () => window.removeEventListener('geo_io_stats_updated', onStatsUpdated);
+  }, []);
+
   const handleResetToHome = () => {
     setActiveTab('quiz');
     setCatchUpCodes(null);

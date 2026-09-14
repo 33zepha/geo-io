@@ -181,14 +181,19 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
 
-      {/* Subtle Level Progress Line */}
+      {/* XP progress toward next level (not a page loader) */}
       <div
-        className="h-[2px] w-full overflow-hidden bg-clay-border/35"
-        title={`Progression vers le niveau ${rankInfo.level + 1} : ${rankInfo.progressPercent}%`}
+        className="h-[3px] w-full overflow-hidden bg-clay-border/35"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={rankInfo.progressPercent}
+        aria-label={`Progression XP vers le niveau ${rankInfo.level + 1}`}
+        title={`XP : niveau ${rankInfo.level} → ${rankInfo.level + 1} (${rankInfo.progressPercent}%)`}
       >
         <div
-          className="h-full bg-terracotta transition-[width] duration-500 ease-soft"
-          style={{ width: `${rankInfo.progressPercent}%` }}
+          className="h-full origin-left bg-terracotta transition-[width] duration-700 ease-out"
+          style={{ width: `${Number.isFinite(rankInfo.progressPercent) ? rankInfo.progressPercent : 0}%` }}
         />
       </div>
     </header>
