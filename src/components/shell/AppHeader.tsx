@@ -45,14 +45,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-1 px-2 sm:h-[3.75rem] sm:gap-1.5 sm:px-5">
+      <div className="mx-auto flex h-[3.75rem] max-w-5xl items-center justify-between gap-2 px-3 sm:h-16 sm:gap-2.5 sm:px-5">
         {/* Brand & Logo */}
         <button
           onClick={() => {
             soundManager.playClick(400);
             onResetToHome();
           }}
-          className="group flex shrink-0 items-center rounded-lg px-1 py-1 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-terracotta/40"
+          className="group flex shrink-0 items-center rounded-xl px-1.5 py-1.5 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-terracotta/40"
           title="Retour à l'accueil"
           aria-label="Geo.io — retour à l'accueil"
         >
@@ -65,7 +65,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         {/* Center Navigation Tabs */}
         <nav
-          className="flex min-w-0 items-center gap-0.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1 text-xs font-semibold shadow-inner"
+          className="flex min-w-0 items-center gap-1 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1.5 text-xs font-semibold shadow-inner"
           aria-label="Navigation principale"
         >
           <button
@@ -129,7 +129,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </nav>
 
         {/* Right Section: Streak, Level, Sound & Profile */}
-        <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium">
+        <div className="flex shrink-0 items-center gap-2 text-xs font-medium">
           {/* Daily Streak */}
           <div
             className="hidden h-10 items-center gap-1.5 rounded-xl border border-honey/25 bg-honey-light px-2.5 font-bold text-honey-dark lg:flex"

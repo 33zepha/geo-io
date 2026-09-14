@@ -102,28 +102,28 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
   if (!currentQ) return null;
 
   return (
-    <div className="w-full max-w-4xl mx-auto h-full max-h-full flex flex-col justify-between gap-2 overflow-hidden select-none">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
       {/* Top Question HUD */}
-      <div className="bg-white border border-clay-border/80 rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 shadow-sm flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => {
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="touch-target flex items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer shrink-0"
+            className="touch-target flex shrink-0 items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer"
             title="Quitter la partie"
           >
             <X className="w-4 h-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm sm:text-base font-display font-extrabold text-clay line-clamp-2 sm:truncate">
+            <h2 className="font-display text-sm font-extrabold leading-snug text-clay line-clamp-2 sm:text-base sm:truncate">
               {currentQ.title}
             </h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-bold text-clay shrink-0">
+        <div className="flex shrink-0 items-center gap-3 text-xs font-bold text-clay">
           <span className="text-clay-muted">
             {currentIndex + 1} / {questions.length}
           </span>
@@ -132,7 +132,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       </div>
 
       {/* Main Map Display */}
-      <div className="bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex-1 min-h-0 flex items-center justify-center">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:p-2">
         <HeroicFranceMap
           className="w-full h-full max-w-full max-h-full"
           interactive={false}
@@ -169,7 +169,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       </div>
 
       {/* 4 Clean Options Grid */}
-      <div className="grid grid-cols-2 gap-2 shrink-0">
+      <div className="grid shrink-0 grid-cols-2 gap-2.5">
         {currentQ.options.map((opt, idx) => {
           let btnStyle = 'bg-white border border-clay-border border-b-2 hover:border-terracotta/40 hover:bg-creme-50 text-clay active:translate-y-[1px]';
           let badgeStyle = 'bg-creme-100 text-clay-muted border-clay-border';
@@ -191,13 +191,13 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
               key={idx}
               disabled={isAnswered}
               onClick={() => handleSelectOption(idx)}
-              className={`min-h-12 p-3 rounded-xl text-left transition cursor-pointer flex items-center justify-between select-none ${btnStyle}`}
+              className={`flex min-h-[3.25rem] cursor-pointer items-center justify-between rounded-xl p-3.5 text-left transition select-none ${btnStyle}`}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className={`w-5 h-5 rounded-md text-[11px] font-mono font-bold flex items-center justify-center border shrink-0 ${badgeStyle}`}>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] font-mono font-bold ${badgeStyle}`}>
                   {idx + 1}
                 </span>
-                <span className="text-xs sm:text-sm font-semibold text-clay line-clamp-2 leading-snug">{opt}</span>
+                <span className="text-xs font-semibold leading-snug text-clay line-clamp-2 sm:text-sm">{opt}</span>
               </div>
 
               {isAnswered && idx === currentQ.correctIndex && (

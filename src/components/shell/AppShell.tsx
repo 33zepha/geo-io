@@ -97,7 +97,7 @@ const InnerAppShell: React.FC = () => {
       />
 
       {/* Main Game Arena */}
-      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-3 pb-2 pt-1 sm:items-center sm:justify-center sm:px-5 sm:py-3">
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-4 pb-3 pt-2.5 sm:items-center sm:justify-center sm:px-5 sm:py-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab === 'quiz' ? `quiz-${resetKey}` : activeTab}

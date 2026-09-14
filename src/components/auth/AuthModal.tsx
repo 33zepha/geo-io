@@ -101,18 +101,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-5 scrollbar-thin sm:p-7">
-            <div className="space-y-1.5 pt-1 text-center">
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-6 scrollbar-thin sm:p-7">
+            <div className="space-y-2 pt-1 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-terracotta/20 bg-terracotta/10 text-2xl font-bold text-terracotta shadow-2xs">
                 🏛️
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-honey/40 bg-honey-light px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-honey-dark">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-honey/40 bg-honey-light px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-honey-dark">
                 <span>Promotion L1 • Geo.io</span>
               </div>
               <h2 className="font-display text-xl font-black text-clay">
                 {tab === 'register' ? 'Rejoindre la Promotion' : 'Connexion Étudiante'}
               </h2>
-              <p className="mx-auto max-w-xs text-xs font-medium leading-relaxed text-clay-muted">
+              <p className="mx-auto max-w-xs text-sm font-medium leading-relaxed text-clay-muted sm:text-xs">
                 {tab === 'register'
                   ? 'Créez votre profil pour participer aux épreuves et au classement.'
                   : 'Retrouvez votre profil, votre progression et votre place au classement.'}
@@ -211,7 +211,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           </div>
 
-          <div className="shrink-0 space-y-2 border-t border-clay-border/70 bg-white px-5 py-3 sm:px-7">
+          <div className="shrink-0 space-y-2.5 border-t border-clay-border/70 bg-white px-6 py-4 sm:px-7">
             <button
               type="submit"
               disabled={loading}

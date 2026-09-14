@@ -73,32 +73,32 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
   };
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-5xl select-none flex-col gap-2 overflow-hidden">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-5xl select-none flex-col gap-3 overflow-hidden">
       {/* Top Banner & Control Strip */}
-      <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-clay-border/80 bg-white px-3.5 py-2.5 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4">
-        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
-          <h1 className="font-display text-sm font-extrabold tracking-tight text-clay sm:text-base">
+      <div className="flex shrink-0 flex-col gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3.5 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:px-5">
+        <div className="flex min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
+          <h1 className="font-display text-base font-extrabold tracking-tight text-clay sm:text-lg">
             Carte de Maîtrise <span className="hidden text-xs font-normal text-clay-muted sm:inline">(101 départements)</span>
           </h1>
 
           {/* 4 Status Counters */}
-          <div className="flex items-center gap-1.5 text-[11px] font-bold">
-            <span className="flex items-center gap-1 rounded-md border border-[#34A853]/20 bg-[#E8F8EE] px-2 py-0.5 text-[#208038]" title="Maîtrisés">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+            <span className="flex items-center gap-1.5 rounded-lg border border-[#34A853]/20 bg-[#E8F8EE] px-2.5 py-1 text-[#208038]" title="Maîtrisés">
               <span className="h-2 w-2 rounded-full bg-[#34A853]" />
               <span>{classification.mastered.length}</span>
             </span>
 
-            <span className="flex items-center gap-1 rounded-md border border-[#FBBC04]/20 bg-[#FEF8E7] px-2 py-0.5 text-[#B07D00]" title="En cours">
+            <span className="flex items-center gap-1.5 rounded-lg border border-[#FBBC04]/20 bg-[#FEF8E7] px-2.5 py-1 text-[#B07D00]" title="En cours">
               <span className="h-2 w-2 rounded-full bg-[#FBBC04]" />
               <span>{classification.learning.length}</span>
             </span>
 
-            <span className="flex items-center gap-1 rounded-md border border-[#EA4335]/20 bg-[#FEECEB] px-2 py-0.5 text-[#C5221F]" title="Points faibles">
+            <span className="flex items-center gap-1.5 rounded-lg border border-[#EA4335]/20 bg-[#FEECEB] px-2.5 py-1 text-[#C5221F]" title="Points faibles">
               <span className="h-2 w-2 rounded-full bg-[#EA4335]" />
               <span>{classification.weak.length}</span>
             </span>
 
-            <span className="flex items-center gap-1 rounded-md border border-clay-border/60 bg-creme-100 px-2 py-0.5 text-clay-muted" title="Non explorés">
+            <span className="flex items-center gap-1.5 rounded-lg border border-clay-border/60 bg-creme-100 px-2.5 py-1 text-clay-muted" title="Non explorés">
               <span className="h-2 w-2 rounded-full bg-[#DDD3C7]" />
               <span>{classification.undiscovered.length}</span>
             </span>
@@ -109,7 +109,7 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
         <button
           type="button"
           onClick={handleLaunchReview}
-          className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-terracotta px-3.5 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-terracotta-hover sm:w-auto"
+          className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-terracotta-hover sm:w-auto"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           <span>
@@ -122,8 +122,8 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
       </div>
 
       {/* Main Map + Inspector */}
-      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-2.5 overflow-hidden lg:grid-cols-3">
-        <div className="relative flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2 shadow-sm lg:col-span-2">
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-3">
+        <div className="relative flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2.5 shadow-sm lg:col-span-2 sm:p-3">
           <HeroicFranceMap
             className="h-full max-h-full w-full max-w-full"
             interactive={true}

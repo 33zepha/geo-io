@@ -152,8 +152,8 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
   if (!currentTarget) return null;
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2 overflow-hidden">
-      <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-clay-border/80 bg-white px-3.5 py-2 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-2.5">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
+      <div className="flex shrink-0 flex-col gap-2.5 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-5 sm:py-3">
         <div className="flex min-w-0 items-start gap-3">
           <button
             type="button"
@@ -171,12 +171,12 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
               {currentTarget.prompt}
             </h2>
             {currentTarget.subPrompt && (
-              <p className="mt-0.5 line-clamp-1 text-xs text-clay-muted">{currentTarget.subPrompt}</p>
+              <p className="mt-1 line-clamp-1 text-xs leading-relaxed text-clay-muted">{currentTarget.subPrompt}</p>
             )}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-clay sm:shrink-0 sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold text-clay sm:shrink-0 sm:justify-end">
           {isExpertTimed && !isAnswered && (
             <span
               className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 ${
@@ -207,7 +207,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         </div>
       )}
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2 shadow-sm sm:p-3">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:p-3">
         {isExpertTimed && !isAnswered && (
           <div className="absolute inset-x-3 top-12 z-20 h-1.5 overflow-hidden rounded-full bg-creme-200">
             <div

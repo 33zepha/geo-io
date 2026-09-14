@@ -152,7 +152,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Top bar */}
-        <div className="flex shrink-0 items-center justify-between border-b border-clay-border/60 px-4 py-3 sm:px-5">
+        <div className="flex shrink-0 items-center justify-between border-b border-clay-border/60 px-5 py-3.5 sm:px-5">
           {isEditing ? (
             <button
               type="button"
@@ -184,7 +184,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         {isEditing ? (
           <>
-            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4 scrollbar-thin sm:px-5">
+            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 scrollbar-thin sm:px-5">
               <div>
                 <h2 className="font-display text-lg font-extrabold tracking-tight text-clay">
                   Modifier mon identité
@@ -239,7 +239,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
           </>
         ) : (
-          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4 scrollbar-thin sm:px-5">
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 scrollbar-thin sm:px-5">
             {/* Hero identity */}
             <section className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-left">
               <div className="relative shrink-0">

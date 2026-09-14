@@ -238,14 +238,14 @@ export const GameHub: React.FC<GameHubProps> = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-start space-y-3 overflow-y-auto overscroll-contain scrollbar-thin sm:justify-center sm:space-y-4"
+            className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-start space-y-4 overflow-y-auto overscroll-contain px-0.5 scrollbar-thin sm:justify-center sm:space-y-5"
           >
             {/* Header Title */}
-            <motion.div variants={itemVariants} className="text-center space-y-0.5">
+            <motion.div variants={itemVariants} className="space-y-1.5 text-center">
               <h1 className="text-xl sm:text-2xl font-extrabold text-clay font-display tracking-tight">
                 Configuration de partie
               </h1>
-              <p className="text-xs text-clay-muted max-w-md mx-auto">
+              <p className="mx-auto max-w-md text-sm leading-relaxed text-clay-muted sm:text-xs">
                 Choisis ta mécanique de jeu, tes paramètres et lance ton défi.
               </p>
             </motion.div>
@@ -291,14 +291,14 @@ export const GameHub: React.FC<GameHubProps> = ({
             )}
 
             {/* Console Dashboard: 2-Column Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch">
+            <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 sm:gap-5">
               {/* Left Column: Mode Selection */}
-              <motion.div variants={itemVariants} className="space-y-2 flex flex-col justify-between">
+              <motion.div variants={itemVariants} className="flex flex-col justify-between space-y-2.5">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-clay-muted">
                   1. Mode de jeu
                 </h2>
 
-                <div className="grid grid-cols-2 gap-2 flex-1">
+                <div className="grid flex-1 grid-cols-2 gap-2.5">
                   {modesList.map((m) => {
                     const isLockedByCatchUp = isCatchUpActive && m.id !== 'clic_carte';
                     const isSelected = settings.mode === m.id;
@@ -311,19 +311,19 @@ export const GameHub: React.FC<GameHubProps> = ({
                           if (isLockedByCatchUp) return;
                           setSettings({ ...settings, mode: m.id });
                         }}
-                        className={`pressable flex min-h-[4.75rem] cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition ${
+                        className={`pressable flex min-h-[5.25rem] cursor-pointer flex-col justify-between rounded-2xl border p-3.5 text-left transition ${
                           isSelected
                             ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs ring-1 ring-terracotta/20'
                             : 'bg-white/80 border-clay-border hover:bg-white text-clay'
                         }`}
                       >
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className={`p-1.5 rounded-lg ${
+                        <div className="mb-2 flex items-center gap-2.5">
+                          <div className={`rounded-lg p-2 ${
                             isSelected ? 'bg-terracotta-light' : 'bg-creme-100'
                           }`}>
                             {m.icon}
                           </div>
-                          <span className="font-bold text-xs sm:text-sm text-clay leading-tight">
+                          <span className="font-bold text-xs sm:text-sm text-clay leading-snug">
                             {m.title}
                           </span>
                         </div>
@@ -337,10 +337,10 @@ export const GameHub: React.FC<GameHubProps> = ({
               </motion.div>
 
               {/* Right Column: Parameters & Launch */}
-              <motion.div variants={itemVariants} className="space-y-3 flex flex-col justify-between">
+              <motion.div variants={itemVariants} className="flex flex-col justify-between space-y-4">
                 {/* 2. Périmètre Géographique */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
                     <h2 className="text-xs font-bold uppercase tracking-wider text-clay-muted">
                       2. Périmètre géographique
                     </h2>
@@ -354,19 +354,19 @@ export const GameHub: React.FC<GameHubProps> = ({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       onClick={() => {
                         soundManager.playClick(430);
                         setSettings({ ...settings, regionCode: undefined });
                       }}
-                      className={`flex min-h-11 cursor-pointer items-center justify-between rounded-xl border p-2.5 text-left transition ${
+                      className={`flex min-h-12 cursor-pointer items-center justify-between rounded-xl border p-3 text-left transition ${
                         !settings.regionCode
                           ? 'border-b-2 border-terracotta border-b-terracotta-dark bg-white font-bold text-clay shadow-xs'
                           : 'border-clay-border bg-white/80 text-clay-muted hover:bg-white'
                       }`}
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <MapPin className="w-3.5 h-3.5 text-terracotta" />
                         <span className="text-xs font-bold">Toute la France</span>
                       </div>
@@ -382,7 +382,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                             regionCode: e.target.value ? e.target.value : undefined 
                           });
                         }}
-                        className={`h-full w-full cursor-pointer appearance-none rounded-xl border bg-white/80 p-2.5 pr-6 text-base font-bold transition sm:text-xs ${
+                        className={`h-full min-h-12 w-full cursor-pointer appearance-none rounded-xl border bg-white/80 p-3 pr-7 text-base font-bold transition sm:text-xs ${
                           settings.regionCode
                             ? 'border-b-2 border-terracotta border-b-terracotta-dark bg-white text-clay shadow-xs'
                             : 'border-clay-border text-clay-muted hover:bg-white'
@@ -403,12 +403,12 @@ export const GameHub: React.FC<GameHubProps> = ({
                 </div>
 
                 {/* 3. Difficulté */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-clay-muted">
                     3. Niveau de difficulté
                   </h2>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2.5">
                     {difficultyList.map((d) => {
                       const isSelected = settings.difficulty === d.id;
                       return (
@@ -418,7 +418,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                             soundManager.playClick(480);
                             setSettings({ ...settings, difficulty: d.id });
                           }}
-                          className={`flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-xl border px-2.5 py-2 text-center transition ${
+                          className={`flex min-h-12 cursor-pointer flex-col items-center justify-center rounded-xl border px-2.5 py-2.5 text-center transition ${
                             isSelected
                               ? 'border-b-2 border-terracotta border-b-terracotta-dark bg-white font-bold text-clay shadow-xs'
                               : 'border-clay-border bg-white/80 text-clay-muted hover:bg-white'
@@ -433,12 +433,12 @@ export const GameHub: React.FC<GameHubProps> = ({
                 </div>
 
                 {/* 4. Nombre de questions & Lancement */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-xs font-bold uppercase tracking-wider text-clay-muted">
                       4. Questions :
                     </span>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {countOptions.map((count) => {
                         const isSelected = settings.questionCount === count;
                         return (
@@ -448,7 +448,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                               soundManager.playClick(420);
                               setSettings({ ...settings, questionCount: count });
                             }}
-                            className={`min-h-10 min-w-10 px-3 py-2 rounded-lg border text-center transition cursor-pointer text-xs font-bold ${
+                            className={`min-h-11 min-w-11 cursor-pointer rounded-xl border px-3.5 py-2.5 text-center text-xs font-bold transition ${
                               isSelected
                                 ? 'bg-white border-clay-border border-b-2 shadow-xs text-terracotta'
                                 : 'bg-white/80 border-clay-border hover:bg-white text-clay-muted'
@@ -464,7 +464,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                   {/* Launch CTA */}
                   <button
                     onClick={startGame}
-                    className="btn-3d flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-b-terracotta-dark bg-terracotta py-3 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover"
+                    className="btn-3d flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3.5 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover"
                   >
                     <span>Lancer la partie</span>
                     <ArrowRight className="w-4 h-4" />

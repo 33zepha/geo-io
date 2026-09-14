@@ -10,9 +10,77 @@ import {
   getRegionViewBox,
 } from '../../data/franceRegionBoundaries';
 import { soundManager } from '../../lib/audio';
-import { RotateCcw, Search, Compass } from 'lucide-react';
+import { RotateCcw, Search, Compass, ZoomIn, ZoomOut } from 'lucide-react';
 
 const NOUVELLE_AQUITAINE_BOUNDARY_PATH = REGION_BOUNDARIES['75'].path.replaceAll('Z', '');
+
+type MapViewBox = { x: number; y: number; w: number; h: number };
+type MapCamera = { scale: number; panX: number; panY: number };
+
+/** Crop empty SVG margins so metropolitan France fills the stage. */
+const FRANCE_DESKTOP: MapViewBox = { x: 152, y: 110, w: 636, h: 570 };
+/** Tighter crop on phones — departments render larger for finger taps. */
+const FRANCE_MOBILE: MapViewBox = { x: 165, y: 118, w: 610, h: 545 };
+const IDF_VIEW: MapViewBox = { x: 380, y: 160, w: 140, h: 140 };
+
+const MIN_CAMERA_SCALE = 1;
+const MAX_CAMERA_SCALE = 4.5;
+const DEFAULT_CAMERA: MapCamera = { scale: 1, panX: 0, panY: 0 };
+
+function parseViewBox(raw: string): MapViewBox {
+  const [x, y, w, h] = raw.split(/\s+/).map(Number);
+  return { x, y, w, h };
+}
+
+function formatViewBox(box: MapViewBox): string {
+  return `${box.x} ${box.y} ${box.w} ${box.h}`;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function clampCamera(base: MapViewBox, camera: MapCamera): MapCamera {
+  const scale = clamp(camera.scale, MIN_CAMERA_SCALE, MAX_CAMERA_SCALE);
+  const visibleW = base.w / scale;
+  const visibleH = base.h / scale;
+  const maxPanX = Math.max(0, (base.w - visibleW) / 2);
+  const maxPanY = Math.max(0, (base.h - visibleH) / 2);
+  return {
+    scale,
+    panX: clamp(camera.panX, -maxPanX, maxPanX),
+    panY: clamp(camera.panY, -maxPanY, maxPanY),
+  };
+}
+
+function applyCamera(base: MapViewBox, camera: MapCamera): MapViewBox {
+  const clamped = clampCamera(base, camera);
+  const w = base.w / clamped.scale;
+  const h = base.h / clamped.scale;
+  const cx = base.x + base.w / 2 + clamped.panX;
+  const cy = base.y + base.h / 2 + clamped.panY;
+  return { x: cx - w / 2, y: cy - h / 2, w, h };
+}
+
+function clientPointToSvg(
+  clientX: number,
+  clientY: number,
+  svg: SVGSVGElement,
+  view: MapViewBox
+): { x: number; y: number } {
+  const rect = svg.getBoundingClientRect();
+  const x = view.x + ((clientX - rect.left) / Math.max(rect.width, 1)) * view.w;
+  const y = view.y + ((clientY - rect.top) / Math.max(rect.height, 1)) * view.h;
+  return { x, y };
+}
+
+function touchDistance(a: React.Touch, b: React.Touch): number {
+  return Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+}
+
+function touchMidpoint(a: React.Touch, b: React.Touch): { x: number; y: number } {
+  return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+}
 
 export interface HeroicFranceMapProps {
   onDepartmentClick?: (code: string) => void;
@@ -95,7 +163,36 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 }) => {
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'auto' | 'france' | 'idf' | 'region'>('auto');
+  const [camera, setCamera] = useState<MapCamera>(DEFAULT_CAMERA);
+  const [isNarrow, setIsNarrow] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const cameraRef = useRef(camera);
+  const suppressClickRef = useRef(false);
+  const gestureRef = useRef<{
+    mode: 'pinch' | 'pan' | null;
+    startDistance: number;
+    startScale: number;
+    startPanX: number;
+    startPanY: number;
+    startMidClientX: number;
+    startMidClientY: number;
+    startMidSvgX: number;
+    startMidSvgY: number;
+    lastClientX: number;
+    lastClientY: number;
+    moved: boolean;
+  } | null>(null);
+
+  cameraRef.current = camera;
+
+  useEffect(() => {
+    const syncNarrow = () => setIsNarrow(window.matchMedia('(max-width: 640px)').matches);
+    syncNarrow();
+    window.addEventListener('resize', syncNarrow);
+    return () => window.removeEventListener('resize', syncNarrow);
+  }, []);
 
   // Sync activeRegion changes: if activeRegion is set, default to auto-framing on that region
   useEffect(() => {
@@ -104,20 +201,31 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
     }
   }, [activeRegion]);
 
-  // Compute effective viewBox
-  const viewBox = useMemo(() => {
-    if (currentView === 'idf') {
-      // Zoomed on Île-de-France (around Paris x:440, y:220)
-      return '380 160 140 140';
-    }
-    if ((currentView === 'region' || currentView === 'auto') && activeRegion) {
-      return getRegionViewBox(activeRegion);
-    }
-    // Full France default
-    return '0 0 800 800';
+  useEffect(() => {
+    setCamera(DEFAULT_CAMERA);
   }, [currentView, activeRegion]);
 
-  const isZoomed = currentView === 'idf' || ((currentView === 'region' || currentView === 'auto') && Boolean(activeRegion));
+  // Compute base framing (before pinch/pan camera)
+  const baseViewBox = useMemo((): MapViewBox => {
+    if (currentView === 'idf') {
+      return IDF_VIEW;
+    }
+    if ((currentView === 'region' || currentView === 'auto') && activeRegion) {
+      return parseViewBox(getRegionViewBox(activeRegion));
+    }
+    return isNarrow ? FRANCE_MOBILE : FRANCE_DESKTOP;
+  }, [currentView, activeRegion, isNarrow]);
+
+  const liveViewBox = useMemo(
+    () => applyCamera(baseViewBox, camera),
+    [baseViewBox, camera]
+  );
+
+  const viewBox = formatViewBox(liveViewBox);
+  const isZoomed =
+    currentView === 'idf' ||
+    ((currentView === 'region' || currentView === 'auto') && Boolean(activeRegion)) ||
+    camera.scale > 1.02;
 
   let focusedRegionCode: string | null = null;
   if (currentView === 'idf') {
@@ -212,6 +320,10 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
   const handleClick = useCallback((code: string) => {
     if (!interactive) return;
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
 
     if (selectionMode === 'region') {
       const dept = DEPARTMENTS[code];
@@ -222,6 +334,172 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
       onDepartmentClick(code);
     }
   }, [interactive, selectionMode, onRegionClick, onDepartmentClick]);
+
+  const zoomBy = useCallback((factor: number, focusClient?: { x: number; y: number }) => {
+    const svg = svgRef.current;
+    const current = cameraRef.current;
+    const nextScale = clamp(current.scale * factor, MIN_CAMERA_SCALE, MAX_CAMERA_SCALE);
+    if (nextScale === current.scale) return;
+
+    if (svg && focusClient) {
+      const before = applyCamera(baseViewBox, current);
+      const focusSvg = clientPointToSvg(focusClient.x, focusClient.y, svg, before);
+      const rect = svg.getBoundingClientRect();
+      const focusRatioX = (focusClient.x - rect.left) / Math.max(rect.width, 1);
+      const focusRatioY = (focusClient.y - rect.top) / Math.max(rect.height, 1);
+      const newViewW = baseViewBox.w / nextScale;
+      const newViewH = baseViewBox.h / nextScale;
+      const newX = focusSvg.x - focusRatioX * newViewW;
+      const newY = focusSvg.y - focusRatioY * newViewH;
+      const panX = newX + newViewW / 2 - (baseViewBox.x + baseViewBox.w / 2);
+      const panY = newY + newViewH / 2 - (baseViewBox.y + baseViewBox.h / 2);
+      setCamera(clampCamera(baseViewBox, { scale: nextScale, panX, panY }));
+      return;
+    }
+
+    setCamera((prev) => clampCamera(baseViewBox, { ...prev, scale: nextScale }));
+  }, [baseViewBox]);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length === 2) {
+        event.preventDefault();
+        const svg = svgRef.current;
+        if (!svg) return;
+        const [a, b] = [event.touches[0], event.touches[1]];
+        const mid = touchMidpoint(a, b);
+        const current = cameraRef.current;
+        const live = applyCamera(baseViewBox, current);
+        const midSvg = clientPointToSvg(mid.x, mid.y, svg, live);
+        gestureRef.current = {
+          mode: 'pinch',
+          startDistance: Math.max(touchDistance(a, b), 1),
+          startScale: current.scale,
+          startPanX: current.panX,
+          startPanY: current.panY,
+          startMidClientX: mid.x,
+          startMidClientY: mid.y,
+          startMidSvgX: midSvg.x,
+          startMidSvgY: midSvg.y,
+          lastClientX: mid.x,
+          lastClientY: mid.y,
+          moved: false,
+        };
+        suppressClickRef.current = true;
+        return;
+      }
+
+      if (event.touches.length === 1 && cameraRef.current.scale > 1.02) {
+        const t = event.touches[0];
+        gestureRef.current = {
+          mode: 'pan',
+          startDistance: 0,
+          startScale: cameraRef.current.scale,
+          startPanX: cameraRef.current.panX,
+          startPanY: cameraRef.current.panY,
+          startMidClientX: t.clientX,
+          startMidClientY: t.clientY,
+          startMidSvgX: 0,
+          startMidSvgY: 0,
+          lastClientX: t.clientX,
+          lastClientY: t.clientY,
+          moved: false,
+        };
+      }
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      const gesture = gestureRef.current;
+      if (!gesture) return;
+      const svg = svgRef.current;
+      if (!svg) return;
+
+      if (gesture.mode === 'pinch' && event.touches.length === 2) {
+        event.preventDefault();
+        const [a, b] = [event.touches[0], event.touches[1]];
+        const mid = touchMidpoint(a, b);
+        const distance = Math.max(touchDistance(a, b), 1);
+        const nextScale = clamp(
+          gesture.startScale * (distance / gesture.startDistance),
+          MIN_CAMERA_SCALE,
+          MAX_CAMERA_SCALE
+        );
+        const rect = svg.getBoundingClientRect();
+        const focusRatioX = (mid.x - rect.left) / Math.max(rect.width, 1);
+        const focusRatioY = (mid.y - rect.top) / Math.max(rect.height, 1);
+        const newViewW = baseViewBox.w / nextScale;
+        const newViewH = baseViewBox.h / nextScale;
+        const newX = gesture.startMidSvgX - focusRatioX * newViewW;
+        const newY = gesture.startMidSvgY - focusRatioY * newViewH;
+        const panX = newX + newViewW / 2 - (baseViewBox.x + baseViewBox.w / 2);
+        const panY = newY + newViewH / 2 - (baseViewBox.y + baseViewBox.h / 2);
+        gesture.moved = true;
+        suppressClickRef.current = true;
+        setCamera(clampCamera(baseViewBox, { scale: nextScale, panX, panY }));
+        return;
+      }
+
+      if (gesture.mode === 'pan' && event.touches.length === 1) {
+        const t = event.touches[0];
+        const dx = t.clientX - gesture.lastClientX;
+        const dy = t.clientY - gesture.lastClientY;
+        const totalDx = t.clientX - gesture.startMidClientX;
+        const totalDy = t.clientY - gesture.startMidClientY;
+        if (Math.hypot(totalDx, totalDy) > 8) {
+          gesture.moved = true;
+          suppressClickRef.current = true;
+          event.preventDefault();
+        }
+        if (!gesture.moved) return;
+
+        const rect = svg.getBoundingClientRect();
+        const scale = cameraRef.current.scale;
+        const svgDx = -(dx / Math.max(rect.width, 1)) * (baseViewBox.w / scale);
+        const svgDy = -(dy / Math.max(rect.height, 1)) * (baseViewBox.h / scale);
+        gesture.lastClientX = t.clientX;
+        gesture.lastClientY = t.clientY;
+        setCamera((prev) =>
+          clampCamera(baseViewBox, {
+            ...prev,
+            panX: prev.panX + svgDx,
+            panY: prev.panY + svgDy,
+          })
+        );
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (gestureRef.current?.moved) {
+        suppressClickRef.current = true;
+        window.setTimeout(() => {
+          suppressClickRef.current = false;
+        }, 80);
+      }
+      gestureRef.current = null;
+    };
+
+    node.addEventListener('touchstart', onTouchStart, { passive: false });
+    node.addEventListener('touchmove', onTouchMove, { passive: false });
+    node.addEventListener('touchend', onTouchEnd);
+    node.addEventListener('touchcancel', onTouchEnd);
+
+    return () => {
+      node.removeEventListener('touchstart', onTouchStart);
+      node.removeEventListener('touchmove', onTouchMove);
+      node.removeEventListener('touchend', onTouchEnd);
+      node.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [baseViewBox]);
+
+  const handleWheel = useCallback((event: React.WheelEvent) => {
+    if (!interactive) return;
+    event.preventDefault();
+    const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
+    zoomBy(factor, { x: event.clientX, y: event.clientY });
+  }, [interactive, zoomBy]);
 
   // Compute styling for a department path
   const getDepartmentStyle = useCallback((deptCode: string) => {
@@ -339,14 +617,17 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
   return (
     <div
-      className={`relative max-w-[760px] mx-auto select-none flex items-center justify-center ${className || 'w-full aspect-square'}`}
+      ref={containerRef}
+      className={`relative max-w-[760px] mx-auto select-none flex items-center justify-center touch-none ${className || 'w-full aspect-square'}`}
       onMouseMove={handleMouseMove}
+      onWheel={handleWheel}
     >
       {/* Tactical Floating Controls (Top Left) */}
-      <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-2xl border-2 border-clay-border/80 shadow-soft">
+      <div className="absolute top-3.5 left-3.5 z-30 flex max-w-[calc(100%-1.75rem)] flex-wrap items-center gap-2 rounded-2xl border-2 border-clay-border/80 bg-white/95 p-2 shadow-soft backdrop-blur-md">
         {/* Regional Framing Toggle (if activeRegion provided) */}
         {activeRegion && (
           <button
+            type="button"
             onClick={() => {
               soundManager.playClick(420);
               setCurrentView((v) => (v === 'region' || (v === 'auto' && activeRegion) ? 'france' : 'region'));
@@ -369,11 +650,12 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
         {/* Paris / IDF Loupe Button */}
         <button
+          type="button"
           onClick={() => {
             soundManager.playClick(400);
             setCurrentView((v) => (v === 'idf' ? (activeRegion ? 'region' : 'france') : 'idf'));
           }}
-          className={`px-3 py-1.5 rounded-xl text-xs font-display font-bold flex items-center gap-1.5 transition cursor-pointer ${
+          className={`flex min-h-11 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-display font-bold transition cursor-pointer ${
             currentView === 'idf'
               ? 'bg-terracotta text-white shadow-sm'
               : 'bg-creme-100 hover:bg-creme-200 text-clay'
@@ -384,15 +666,47 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           <span>{currentView === 'idf' ? 'IDF ✕' : 'Loupe IDF'}</span>
         </button>
 
+        <div className="flex items-center gap-0.5 rounded-xl border border-clay-border/70 bg-creme-100/80 p-0.5">
+          <button
+            type="button"
+            onClick={() => {
+              soundManager.playClick(380);
+              zoomBy(1 / 1.25);
+            }}
+            disabled={camera.scale <= MIN_CAMERA_SCALE + 0.01}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-clay transition enabled:hover:bg-white disabled:opacity-40"
+            title="Dézoomer"
+            aria-label="Dézoomer"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              soundManager.playClick(420);
+              zoomBy(1.25);
+            }}
+            disabled={camera.scale >= MAX_CAMERA_SCALE - 0.01}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-clay transition enabled:hover:bg-white disabled:opacity-40"
+            title="Zoomer"
+            aria-label="Zoomer"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </button>
+        </div>
+
         {/* Reset Camera to Full France */}
         {isZoomed && (
           <button
+            type="button"
             onClick={() => {
               soundManager.playClick(380);
+              setCamera(DEFAULT_CAMERA);
               setCurrentView('france');
             }}
-            className="p-1.5 rounded-xl bg-creme-100 hover:bg-creme-200 text-clay transition cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-creme-100 text-clay transition hover:bg-creme-200 cursor-pointer"
             title="Revenir à la vue générale France métropolitaine"
+            aria-label="Réinitialiser le zoom"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -401,8 +715,10 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
       {/* SVG Map Container */}
       <svg
+        ref={svgRef}
         viewBox={viewBox}
-        className="w-full h-full overflow-hidden transition-all duration-300 ease-out"
+        preserveAspectRatio={isNarrow ? 'xMidYMid slice' : 'xMidYMid meet'}
+        className="h-full w-full overflow-hidden"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
@@ -663,11 +979,11 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
       {/* Readable, finger-sized overseas selector in the free south-west corner. */}
       {(!focusedRegionCode || currentView === 'idf') && (
-        <div className="absolute bottom-2 left-2 z-20 w-[108px] rounded-xl border border-clay-border/80 bg-white/95 p-1.5 shadow-soft backdrop-blur-sm sm:bottom-3 sm:left-3">
-          <div className="mb-1 text-center font-display text-[9px] font-bold uppercase tracking-wide text-clay-muted">
+        <div className="absolute bottom-3 left-3 z-20 w-[112px] rounded-xl border border-clay-border/80 bg-white/95 p-2 shadow-soft backdrop-blur-sm sm:bottom-3.5 sm:left-3.5">
+          <div className="mb-1.5 text-center font-display text-[9px] font-bold uppercase tracking-wide text-clay-muted">
             Outre-mer
           </div>
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-1.5">
             {DEPARTMENT_MAP_PATHS.filter((dept) => dept.isDrom).map((dept) => {
               const style = getDepartmentStyle(dept.code);
               return (

@@ -111,28 +111,28 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
   if (!currentEnquete) return null;
 
   return (
-    <div className="w-full max-w-4xl mx-auto h-full max-h-full flex flex-col justify-between gap-2 overflow-hidden select-none">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
       {/* Top HUD */}
-      <div className="bg-white border border-clay-border/80 rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 shadow-sm flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => {
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="touch-target flex items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer shrink-0"
+            className="touch-target flex shrink-0 items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer"
             title="Quitter la partie"
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="truncate">
-            <h2 className="text-sm sm:text-base font-display font-extrabold text-clay truncate">
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-sm font-extrabold text-clay sm:text-base">
               Enquête #{currentIndex + 1} : Trouve le territoire mystère
             </h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-bold text-clay shrink-0">
+        <div className="flex shrink-0 items-center gap-3 text-xs font-bold text-clay">
           <span className="text-clay-muted">
             {currentIndex + 1} / {enquetes.length}
           </span>
@@ -141,10 +141,10 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       </div>
 
       {/* Middle Stage: Split Clues (left) & Map (right) */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,38%)_minmax(0,1fr)] gap-2 overflow-hidden md:grid-cols-5 md:grid-rows-1 md:gap-2.5">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,38%)_minmax(0,1fr)] gap-2.5 overflow-hidden md:grid-cols-5 md:grid-rows-1 md:gap-3">
         {/* Clues Card (Left 2 cols) */}
-        <div className="flex min-h-0 flex-col gap-2 overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3 shadow-sm md:col-span-2 md:max-h-none">
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-clay-border/60 pb-2">
+        <div className="flex min-h-0 flex-col gap-2.5 overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3.5 shadow-sm md:col-span-2 md:max-h-none sm:p-4">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-clay-border/60 pb-2.5">
             <span className="text-xs font-bold text-clay">
               Indices ({revealedCluesCount}/{currentEnquete.clues.length})
             </span>
@@ -211,7 +211,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
         </div>
 
         {/* Map Container (Right 3 cols) */}
-        <div className="md:col-span-3 min-h-0 bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex items-center justify-center">
+        <div className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm md:col-span-3 sm:p-2">
           <HeroicFranceMap
             className="w-full h-full max-w-full max-h-full"
             interactive={!isAnswered}

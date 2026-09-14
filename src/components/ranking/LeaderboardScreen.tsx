@@ -47,13 +47,13 @@ export const LeaderboardScreen: React.FC = () => {
 
   return (
     <div className="flex h-full max-h-full w-full select-none flex-col overflow-hidden safe-bottom">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-clay-border/70 pb-2">
-        <div className="min-w-0">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-clay-border/70 pb-3">
+        <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-terracotta sm:text-xs">
             <Trophy className="h-3.5 w-3.5" />
             Classement réel de la promo
           </div>
-          <h1 className="truncate font-display text-lg font-extrabold tracking-tight text-clay sm:text-xl">
+          <h1 className="truncate font-display text-xl font-extrabold tracking-tight text-clay sm:text-2xl">
             Les meilleurs géographes
           </h1>
         </div>
@@ -81,7 +81,7 @@ export const LeaderboardScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2 pr-1 pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-3 pr-1 pb-5">
         {isLoading ? (
           <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-terracotta/20 border-t-terracotta" />

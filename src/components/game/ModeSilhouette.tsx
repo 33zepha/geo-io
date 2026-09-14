@@ -118,28 +118,28 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
   const targetGrammar = getDeptGrammar(currentRound.targetDept.code);
 
   return (
-    <div className="w-full max-w-4xl mx-auto h-full max-h-full flex flex-col justify-between gap-2 overflow-hidden select-none">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
       {/* Top HUD */}
-      <div className="bg-white border border-clay-border/80 rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 shadow-sm flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => {
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="touch-target flex items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer shrink-0"
+            className="touch-target flex shrink-0 items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer"
             title="Quitter la partie"
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="truncate">
-            <h2 className="text-sm sm:text-base font-display font-extrabold text-clay truncate">
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-sm font-extrabold text-clay sm:text-base">
               Défi Silhouette : Quel est ce département ?
             </h2>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-bold text-clay shrink-0">
+        <div className="flex shrink-0 items-center gap-3 text-xs font-bold text-clay">
           <span className="text-clay-muted">
             {currentIndex + 1} / {rounds.length}
           </span>
@@ -148,7 +148,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
       </div>
 
       {/* Main Silhouette Stage */}
-      <div className="bg-white border border-clay-border/80 rounded-2xl p-3 sm:p-4 shadow-sm flex-1 min-h-0 flex items-center justify-center relative overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-4 shadow-sm sm:p-5">
         <div className="w-full h-full max-w-xs sm:max-w-sm flex items-center justify-center">
           <svg
             viewBox={viewBox}
@@ -220,7 +220,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
         )}
         
         </div>
-      <div className="grid grid-cols-2 gap-2 shrink-0">{currentRound.options.map((opt, idx) => {
+      <div className="grid shrink-0 grid-cols-2 gap-2.5">{currentRound.options.map((opt, idx) => {
           const optGrammar = getDeptGrammar(opt.code);
           let btnStyle = 'bg-white border border-clay-border border-b-2 hover:border-terracotta/40 hover:bg-creme-50 text-clay active:translate-y-[1px]';
           let badgeStyle = 'bg-creme-100 text-clay-muted border-clay-border';
