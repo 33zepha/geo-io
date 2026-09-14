@@ -99,7 +99,7 @@ export function savePlayerStats(stats: PlayerStats): void {
 
 export function addXpAndProgress(
   earnedXp: number,
-  mode: 'pointage' | 'master' | 'silhouette',
+  mode: 'pointage' | 'master' | 'silhouette' | 'qcm' | 'enquete',
   score: number,
   correctCount: number,
   questionCount: number,
@@ -144,6 +144,34 @@ export function addXpAndProgress(
       }
     }
   }
+
+
+  // High scores by mode family
+  if (mode === 'pointage') {
+    current.highScorePointage = Math.max(current.highScorePointage || 0, score);
+  } else if (mode === 'silhouette') {
+    current.highScoreSilhouette = Math.max(current.highScoreSilhouette || 0, score);
+  } else {
+    // qcm / enquete / master share the "master" high score slot
+    current.highScoreMaster = Math.max(current.highScoreMaster || 0, score);
+  }
+
+  // Lightweight badge unlocks
+  const unlock = (id: string) => {
+    if (!current.unlockedBadges.includes(id)) {
+      current.unlockedBadges.push(id);
+      newBadges.push(id);
+    }
+  };
+  if (current.totalGames >= 1) unlock('first_step');
+  if (current.streak >= 3) unlock('streak_3d');
+  if (mode === 'silhouette' && correctCount >= 5 && correctCount === questionCount) {
+    unlock('silhouette_oracle');
+  }
+  if (mode === 'pointage' && correctCount >= 5 && correctCount === questionCount) {
+    unlock('sharp_shooter');
+  }
+  if (newRank.level >= 10) unlock('ign_director');
 
   savePlayerStats(current);
 

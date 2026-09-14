@@ -136,7 +136,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
         <HeroicFranceMap
           className="w-full h-full max-w-full max-h-full"
           interactive={false}
-          targetCode={currentQ.targetCode}
+          targetCode={isAnswered ? currentQ.targetCode : null}
           highlightCodes={isAnswered ? currentQ.relatedCodes || [] : []}
           activeRegion={settings.regionCode}
           feedbackState={
@@ -153,7 +153,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
         {isAnswered && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-lg">
             <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
-              <p className="text-xs text-clay leading-snug font-medium line-clamp-2">
+              <p className="text-xs text-clay leading-snug font-medium line-clamp-4 sm:line-clamp-none">
                 💡 {currentQ.explanation}
               </p>
               <button
@@ -169,7 +169,7 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
       </div>
 
       {/* 4 Clean Options Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
+      <div className="grid grid-cols-2 gap-2 shrink-0">
         {currentQ.options.map((opt, idx) => {
           let btnStyle = 'bg-white border border-clay-border border-b-2 hover:border-terracotta/40 hover:bg-creme-50 text-clay active:translate-y-[1px]';
           let badgeStyle = 'bg-creme-100 text-clay-muted border-clay-border';

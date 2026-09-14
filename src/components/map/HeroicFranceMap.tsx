@@ -265,7 +265,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
     }
 
     // In interactive mode before answering, do NOT reveal target
-    const canRevealTarget = !interactive || feedbackState !== null;
+    const canRevealTarget = feedbackState !== null;
     if (canRevealTarget && (isTargetDept || isTargetReg)) {
       return {
         fill: '#FCE5BC',
@@ -332,7 +332,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
     targetCentroid &&
     (showTargetPin !== undefined
       ? showTargetPin
-      : !interactive || feedbackState !== null)
+      : feedbackState !== null)
   );
 
   const activeRegionName = activeRegion ? REGIONS[activeRegion]?.name : null;
@@ -476,7 +476,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
               selectionMode === 'department'
                 ? targetCode === d.code
                 : targetCode !== null && deptInfo?.regionCode === targetCode;
-            const canReveal = !interactive || feedbackState !== null;
+            const canReveal = feedbackState !== null;
             const isHighlightedDrom = canReveal && isTarget;
             const isHoveredDrom = hoveredCode === d.code;
 
@@ -663,7 +663,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
 
       {/* Readable, finger-sized overseas selector in the free south-west corner. */}
       {!focusedRegionCode && (
-        <div className="absolute bottom-12 left-3 z-20 w-[72px] rounded-xl border border-clay-border/80 bg-white/95 p-1.5 shadow-soft backdrop-blur-sm sm:bottom-3">
+        <div className="absolute bottom-2 left-2 z-20 w-[88px] rounded-xl border border-clay-border/80 bg-white/95 p-1.5 shadow-soft backdrop-blur-sm sm:bottom-3 sm:left-3">
           <div className="mb-1 text-center font-display text-[9px] font-bold uppercase tracking-wide text-clay-muted">
             Outre-mer
           </div>
@@ -677,7 +677,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
                   disabled={!interactive}
                   aria-label={`${dept.code} — ${dept.nom}`}
                   title={`${dept.code} — ${dept.nom}`}
-                  className={`h-7 rounded-md border font-mono text-[9px] font-extrabold transition ${
+                  className={`h-9 rounded-lg border font-mono text-[10px] font-extrabold transition ${
                     interactive ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default'
                   }`}
                   style={{

@@ -67,6 +67,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       ]);
     } else {
       soundManager.playError();
+      setRevealedCluesCount(currentEnquete.clues.length);
       setFeedback({ code: clickedCode, isCorrect: false });
       setResults((prev) => [
         ...prev,
@@ -148,6 +149,32 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
               Indices ({revealedCluesCount}/{currentEnquete.clues.length})
             </span>
 
+            {!isAnswered && (
+              <button
+                type="button"
+                onClick={() => {
+                  soundManager.playClick(380);
+                  setFeedback({ code: currentEnquete.targetCode, isCorrect: false });
+                  setIsAnswered(true);
+                  setRevealedCluesCount(currentEnquete.clues.length);
+                  setResults((prev) => [
+                    ...prev,
+                    {
+                      title: `Enquête : ${currentEnquete.targetName}`,
+                      targetName: currentEnquete.targetName,
+                      targetCode: currentEnquete.targetCode,
+                      isCorrect: false,
+                      scoreEarned: 0,
+                      explanation: currentEnquete.explanation,
+                      userAnswer: 'Passé',
+                    },
+                  ]);
+                }}
+                className="px-2.5 py-1 rounded-lg border border-clay-border bg-white text-clay-muted text-xs font-bold hover:bg-creme-100"
+              >
+                Passer
+              </button>
+            )}
             {!isAnswered && revealedCluesCount < currentEnquete.clues.length && (
               <button
                 onClick={handleRevealNextClue}
@@ -194,7 +221,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
 
           {/* Answer Reveal Floating Overlay */}
           {isAnswered && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-md">
+            <div className="absolute bottom-14 left-1/2 sm:bottom-3 -translate-x-1/2 z-40 w-[94%] max-w-md">
               <div
                 className={`p-3 rounded-xl border shadow-md flex items-center justify-between gap-3 ${
                   feedback?.isCorrect

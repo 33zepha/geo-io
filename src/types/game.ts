@@ -20,6 +20,7 @@ export interface MapClickTarget {
   regionName?: string;
   prompt: string;
   subPrompt?: string;
+  hint?: string;
 }
 
 export interface QcmQuestion {

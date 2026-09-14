@@ -114,10 +114,10 @@ export const GameHub: React.FC<GameHubProps> = ({
       const questions = generateQcmQuestions(settings.difficulty, settings.questionCount, settings.regionCode);
       setQcmQuestions(questions);
     } else if (settings.mode === 'silhouette') {
-      const rounds = generateSilhouetteRounds(settings.questionCount, settings.regionCode);
+      const rounds = generateSilhouetteRounds(settings.questionCount, settings.regionCode, settings.difficulty);
       setSilhouetteRounds(rounds);
     } else if (settings.mode === 'enquete_logique') {
-      const enqueteList = generateEnquetes(Math.min(5, settings.questionCount));
+      const enqueteList = generateEnquetes(settings.questionCount, settings.difficulty, settings.regionCode);
       setEnquetes(enqueteList);
     }
 
@@ -141,7 +141,18 @@ export const GameHub: React.FC<GameHubProps> = ({
       isCorrect: r.isCorrect,
     }));
 
-    addXpAndProgress(totalScore, 'pointage', totalScore, correctCount, totalRounds, deptFeedback);
+    const storageMode =
+      settings.mode === 'clic_carte'
+        ? 'pointage'
+        : settings.mode === 'silhouette'
+          ? 'silhouette'
+          : settings.mode === 'enquete_logique'
+            ? 'enquete'
+            : 'qcm';
+
+    // XP normalized by accuracy × length (not raw enquête clue points)
+    const normalizedXp = Math.round((correctCount / Math.max(1, totalRounds)) * totalRounds * 10);
+    addXpAndProgress(normalizedXp, storageMode, totalScore, correctCount, totalRounds, deptFeedback);
 
     if (accuracyPercent >= 80) {
       triggerCelebration();
@@ -289,12 +300,15 @@ export const GameHub: React.FC<GameHubProps> = ({
 
                 <div className="grid grid-cols-2 gap-2 flex-1">
                   {modesList.map((m) => {
+                    const isLockedByCatchUp = isCatchUpActive && m.id !== 'clic_carte';
                     const isSelected = settings.mode === m.id;
                     return (
                       <button
                         key={m.id}
+                        disabled={isLockedByCatchUp}
                         onClick={() => {
                           soundManager.playClick(440);
+                          if (isLockedByCatchUp) return;
                           setSettings({ ...settings, mode: m.id });
                         }}
                         className={`pressable flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition ${

@@ -22,6 +22,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
+  const [showHint, setShowHint] = useState(false);
   const [results, setResults] = useState<RoundResult[]>([]);
 
   const currentRound = rounds[currentIndex];
@@ -38,7 +39,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
 
     if (isCorrect) {
       soundManager.playSuccess(2);
-      setScore((s) => s + 100);
+      setScore((s) => s + Math.max(50, 100 - (showHint ? 25 : 0)));
       setResults((prev) => [
         ...prev,
         {
@@ -46,7 +47,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
           targetName: targetDept.name,
           targetCode: targetDept.code,
           isCorrect: true,
-          scoreEarned: 100,
+          scoreEarned: Math.max(50, 100 - (showHint ? 25 : 0)),
           explanation: `C'est bien ${targetGrammar.withArticle} (${targetDept.code}), préfecture : ${targetDept.prefecture}.`,
         },
       ]);
@@ -76,6 +77,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
       setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
+      setShowHint(false);
     }
   }, [currentIndex, rounds.length, results, onFinishGame]);
 
@@ -197,6 +199,26 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
 
       {/* 4 Clean Options Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
+        {!isAnswered && (
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-[11px] text-clay-muted">Identifie la forme — sans code.</p>
+            <button
+              type="button"
+              onClick={() => {
+                soundManager.playClick(420);
+                setShowHint(true);
+              }}
+              disabled={showHint}
+              className="rounded-lg border border-clay-border bg-creme-100 px-2.5 py-1 text-[11px] font-bold text-clay disabled:opacity-50"
+            >
+              {showHint ? `Région : ${currentRound.targetDept.regionName}` : 'Indice région (−25 pts)'}
+            </button>
+          </div>
+        )}
+        {showHint && isAnswered && (
+          <p className="mb-1 text-[11px] font-semibold text-honey-dark">Région : {currentRound.targetDept.regionName}</p>
+        )}
+        
         {currentRound.options.map((opt, idx) => {
           const optGrammar = getDeptGrammar(opt.code);
           let btnStyle = 'bg-white border border-clay-border border-b-2 hover:border-terracotta/40 hover:bg-creme-50 text-clay active:translate-y-[1px]';
@@ -226,7 +248,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
                   {idx + 1}
                 </span>
                 <span className="text-xs sm:text-sm font-semibold text-clay truncate">
-                  {optGrammar.withArticle} ({opt.code})
+                  {optGrammar.withArticle}
                 </span>
               </div>
 

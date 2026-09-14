@@ -91,6 +91,9 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
                       <span className="text-coral-dark"> (répondu : {r.userAnswer})</span>
                     )}
                   </div>
+                  {r.explanation && (
+                    <p className="text-[11px] leading-snug text-clay-muted">{r.explanation}</p>
+                  )}
                 </div>
               ))}
             </div>

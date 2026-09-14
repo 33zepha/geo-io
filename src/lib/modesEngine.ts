@@ -7,7 +7,8 @@ import {
   GameDifficulty, 
   MapClickTarget, 
   QcmQuestion, 
-  EnqueteTerritoire 
+  EnqueteTerritoire,
+  EnqueteClue,
 } from '../types/game';
 import { Department } from '../types/geo';
 
@@ -22,22 +23,9 @@ function shuffle<T>(arr: T[]): T[] {
 
 // Prominent, well-known departments for beginner tier
 const BEGINNER_DEPT_CODES = [
-  '75', // Paris
-  '13', // Bouches-du-Rhône (Marseille)
-  '69', // Rhône (Lyon)
-  '33', // Gironde (Bordeaux)
-  '31', // Haute-Garonne (Toulouse)
-  '44', // Loire-Atlantique (Nantes)
-  '59', // Nord (Lille)
-  '06', // Alpes-Maritimes (Nice)
-  '67', // Bas-Rhin (Strasbourg)
-  '29', // Finistère (Brest)
-  '35', // Ille-et-Vilaine (Rennes)
-  '34', // Hérault (Montpellier)
-  '74', // Haute-Savoie (Annecy/Chamonix)
-  '83', // Var (Toulon)
-  '2A', // Corse-du-Sud (Ajaccio)
-  '2B', // Haute-Corse (Bastia)
+  '75', '13', '69', '33', '31', '44', '59', '06', '67', '29',
+  '35', '34', '74', '83', '2A', '2B', '92', '93', '94', '77',
+  '78', '91', '95', '38', '42', '63', '21', '14', '76', '57',
 ];
 
 // -------------------------------------------------------------
@@ -48,108 +36,121 @@ export function generateMapClickTargets(
   count: number = 10,
   regionCode?: string
 ): MapClickTarget[] {
-  const targets: MapClickTarget[] = [];
+  const takePadded = <T,>(pool: T[], n: number): T[] => {
+    if (pool.length === 0) return [];
+    const out: T[] = [];
+    let i = 0;
+    const shuffled = shuffle(pool);
+    while (out.length < n) {
+      out.push(shuffled[i % shuffled.length]);
+      i += 1;
+      if (i >= shuffled.length * 3) break; // safety
+    }
+    return out;
+  };
 
-  // Filter pool by region if selected
   const basePool = regionCode && REGIONS[regionCode]
     ? DEPARTMENTS_LIST.filter((d) => d.regionCode === regionCode)
     : DEPARTMENTS_LIST;
 
   if (regionCode && REGIONS[regionCode]) {
-    // Specific Region Training (Grand Tour)
-    const pool = shuffle(basePool).slice(0, count);
-    for (const d of pool) {
+    return takePadded(basePool, count).map((d, idx) => {
       const g = getDeptGrammar(d.code);
-      targets.push({
-        id: `click-reg-${d.code}`,
+      return {
+        id: `click-reg-${d.code}-${idx}`,
         code: d.code,
         name: d.name,
         prefecture: d.prefecture,
         regionName: d.regionName,
-        prompt: `Localise ${g.withArticle} (${d.code})`,
+        prompt: `Localise ${g.withArticle}`,
         subPrompt: `Préfecture : ${d.prefecture}`,
-      });
-    }
-    return targets;
+        hint: `${d.regionName} • n°${d.code}`,
+      };
+    });
   }
 
   if (difficulty === 'debutant') {
-    // Beginner: Prominent departments
-    const pool = shuffle(BEGINNER_DEPT_CODES).slice(0, count);
-    for (const code of pool) {
+    const codes = takePadded(BEGINNER_DEPT_CODES, count);
+    return codes.map((code, idx) => {
       const d = DEPARTMENTS[code];
-      if (!d) continue;
       const g = getDeptGrammar(code);
-      targets.push({
-        id: `click-beg-${code}`,
+      return {
+        id: `click-beg-${code}-${idx}`,
         code: d.code,
         name: d.name,
         prefecture: d.prefecture,
         regionName: d.regionName,
-        prompt: `Localise ${g.withArticle} (${d.prefecture})`,
-        subPrompt: `Région ${d.regionName}`,
-      });
-    }
-  } else if (difficulty === 'expert') {
-    // Expert: Landmarks & Trick Prefectures (without giving the department name)
-    const expertLandmarks = [
-      { prompt: 'Où se trouve le mont Saint-Michel ?', targetCode: '50', hint: 'Dans la Manche' },
-      { prompt: 'Où se dresse la dune du Pilat ?', targetCode: '33', hint: 'En Gironde (bassin d\'Arcachon)' },
-      { prompt: 'Où se situe la préfecture de Saint-Lô ?', targetCode: '50', hint: 'Chef-lieu de la Manche' },
-      { prompt: 'Où se trouve la préfecture de Quimper ?', targetCode: '29', hint: 'Chef-lieu du Finistère' },
-      { prompt: 'Où se situe la préfecture de Vannes ?', targetCode: '56', hint: 'Chef-lieu du Morbihan' },
-      { prompt: 'Où se situe la préfecture de Châlons-en-Champagne ?', targetCode: '51', hint: 'Chef-lieu de la Marne' },
-      { prompt: 'Où se trouve la préfecture de Laon ?', targetCode: '02', hint: 'Chef-lieu de l\'Aisne' },
-      { prompt: 'Où se situe la préfecture de Moulins ?', targetCode: '03', hint: 'Chef-lieu de l\'Allier' },
-      { prompt: 'Où se situe le volcan du Puy de Sancy (1 886 m) ?', targetCode: '63', hint: 'Dans le Puy-de-Dôme' },
-      { prompt: 'Où se trouvent les gorges du Verdon ?', targetCode: '04', hint: 'Dans les Alpes-de-Haute-Provence' },
-      { prompt: 'Où se situe le château de Chambord ?', targetCode: '41', hint: 'En Loir-et-Cher' },
-      { prompt: 'Où la Loire prend-elle sa source au mont Gerbier-de-Jonc ?', targetCode: '07', hint: 'En Ardèche' },
-      { prompt: 'Où se trouve le Territoire de Belfort (90) ?', targetCode: '90', hint: 'Plus petit département métropolitain hors Paris' },
-      { prompt: 'Où se situe le gouffre de Padirac ?', targetCode: '46', hint: 'Dans le Lot' },
-      { prompt: 'Où se situe la pointe du Raz ?', targetCode: '29', hint: 'À l\'extrême ouest du Finistère' },
-      { prompt: 'Où se dresse le sommet du Mont-Blanc (4 807 m) ?', targetCode: '74', hint: 'En Haute-Savoie' },
-      { prompt: 'Où se trouve la préfecture de Mont-de-Marsan ?', targetCode: '40', hint: 'Chef-lieu des Landes' },
-      { prompt: 'Où se situe la préfecture de Tulle ?', targetCode: '19', hint: 'Chef-lieu de la Corrèze' },
-    ];
+        prompt: `Localise ${g.withArticle}`,
+        subPrompt: `Chef-lieu : ${d.prefecture}`,
+        hint: d.regionName,
+      };
+    }).filter(Boolean);
+  }
 
-    const pool = shuffle(expertLandmarks).slice(0, count);
-    for (const item of pool) {
+  if (difficulty === 'expert') {
+    const expertLandmarks = [
+      { prompt: 'Où se trouve le mont Saint-Michel ?', targetCode: '50', hint: 'Manche (50)' },
+      { prompt: 'Où se dresse la dune du Pilat ?', targetCode: '33', hint: 'Gironde (33)' },
+      { prompt: 'Où se situe la préfecture de Saint-Lô ?', targetCode: '50', hint: 'Manche (50)' },
+      { prompt: 'Où se trouve la préfecture de Quimper ?', targetCode: '29', hint: 'Finistère (29)' },
+      { prompt: 'Où se situe la préfecture de Vannes ?', targetCode: '56', hint: 'Morbihan (56)' },
+      { prompt: 'Où se situe la préfecture de Châlons-en-Champagne ?', targetCode: '51', hint: 'Marne (51)' },
+      { prompt: 'Où se trouve la préfecture de Laon ?', targetCode: '02', hint: 'Aisne (02)' },
+      { prompt: 'Où se situe la préfecture de Moulins ?', targetCode: '03', hint: 'Allier (03)' },
+      { prompt: 'Où se situe le volcan du Puy de Sancy ?', targetCode: '63', hint: 'Puy-de-Dôme (63)' },
+      { prompt: 'Où se trouvent les gorges du Verdon ?', targetCode: '04', hint: 'Alpes-de-Haute-Provence (04)' },
+      { prompt: 'Où se situe le château de Chambord ?', targetCode: '41', hint: 'Loir-et-Cher (41)' },
+      { prompt: 'Où la Loire prend-elle sa source ?', targetCode: '07', hint: 'Ardèche (07)' },
+      { prompt: 'Où se trouve le Territoire de Belfort ?', targetCode: '90', hint: 'Code 90' },
+      { prompt: 'Où se situe le gouffre de Padirac ?', targetCode: '46', hint: 'Lot (46)' },
+      { prompt: 'Où se situe la pointe du Raz ?', targetCode: '29', hint: 'Finistère (29)' },
+      { prompt: 'Où se dresse le Mont-Blanc ?', targetCode: '74', hint: 'Haute-Savoie (74)' },
+      { prompt: 'Où se trouve la préfecture de Mont-de-Marsan ?', targetCode: '40', hint: 'Landes (40)' },
+      { prompt: 'Où se situe la préfecture de Tulle ?', targetCode: '19', hint: 'Corrèze (19)' },
+      { prompt: 'Où se trouve la cité de Carcassonne ?', targetCode: '11', hint: 'Aude (11)' },
+      { prompt: 'Où se situe le massif du Pilat ?', targetCode: '42', hint: 'Loire (42)' },
+      { prompt: 'Où se trouve le cap Gris-Nez ?', targetCode: '62', hint: 'Pas-de-Calais (62)' },
+      { prompt: 'Où se situe la baie de Somme ?', targetCode: '80', hint: 'Somme (80)' },
+      { prompt: 'Où se trouve le Cirque de Gavarnie ?', targetCode: '65', hint: 'Hautes-Pyrénées (65)' },
+      { prompt: 'Où se situe le plateau des Glières ?', targetCode: '74', hint: 'Haute-Savoie (74)' },
+      { prompt: 'Où se trouve la préfecture de Digne-les-Bains ?', targetCode: '04', hint: 'Alpes-de-Haute-Provence (04)' },
+      { prompt: 'Où se situe la préfecture de Gap ?', targetCode: '05', hint: 'Hautes-Alpes (05)' },
+      { prompt: 'Où se trouve le viaduc de Millau ?', targetCode: '12', hint: 'Aveyron (12)' },
+      { prompt: 'Où se situe la Camargue « sauvage » ?', targetCode: '13', hint: 'Bouches-du-Rhône (13)' },
+      { prompt: 'Où se trouve le bassin minier classé UNESCO ?', targetCode: '62', hint: 'Pas-de-Calais (62)' },
+      { prompt: 'Où se situe le Marais poitevin ?', targetCode: '85', hint: 'Vendée (85)' },
+    ];
+    return takePadded(expertLandmarks, count).map((item, idx) => {
       const d = DEPARTMENTS[item.targetCode];
-      if (!d) continue;
-      targets.push({
-        id: `click-exp-${d.code}-${Math.random()}`,
+      return {
+        id: `click-exp-${item.targetCode}-${idx}`,
         code: d.code,
         name: d.name,
         prefecture: d.prefecture,
         regionName: d.regionName,
         prompt: item.prompt,
-        subPrompt: 'Clique directement sur le bon département',
-      });
-    }
-  } else {
-    // Intermédiaire: Full pool of 101 departments
-    const pool = shuffle(basePool).slice(0, count);
-    for (const d of pool) {
-      const g = getDeptGrammar(d.code);
-      targets.push({
-        id: `click-mid-${d.code}`,
-        code: d.code,
-        name: d.name,
-        prefecture: d.prefecture,
-        regionName: d.regionName,
-        prompt: `Localise ${g.withArticle} (${d.code})`,
-        subPrompt: `Préfecture : ${d.prefecture} • ${d.regionName}`,
-      });
-    }
+        subPrompt: 'Clique le bon département (pas de timer de grâce)',
+        hint: item.hint,
+      };
+    });
   }
 
-  return targets;
+  // Intermédiaire: localization without code in the prompt
+  return takePadded(basePool, count).map((d, idx) => {
+    const g = getDeptGrammar(d.code);
+    return {
+      id: `click-mid-${d.code}-${idx}`,
+      code: d.code,
+      name: d.name,
+      prefecture: d.prefecture,
+      regionName: d.regionName,
+      prompt: `Localise ${g.withArticle}`,
+      subPrompt: `Région ${d.regionName}`,
+      hint: `Préfecture : ${d.prefecture} (${d.code})`,
+    };
+  });
 }
 
-// -------------------------------------------------------------
-// 2. GENERATEUR: MODE QUIZ QCM NATUREL & INTELLIGENT
-// -------------------------------------------------------------
 export function generateQcmQuestions(
   difficulty: GameDifficulty = 'intermediaire',
   count: number = 10,
@@ -189,7 +190,7 @@ export function generateQcmQuestions(
   for (let i = 0; i < remainingNeeded && i < deptPool.length; i++) {
     const target = deptPool[i];
     const g = getDeptGrammar(target.code);
-    const questionType = Math.floor(Math.random() * 3);
+    const questionType = Math.floor(Math.random() * 4);
 
     if (questionType === 0) {
       // "Quelle est la préfecture du/de la X ?"
@@ -255,7 +256,7 @@ export function generateQcmQuestions(
         targetCode: target.code,
         relatedCodes: [target.code],
       });
-    } else {
+    } else if (questionType === 2) {
       // "Dans quelle région se trouve X ?"
       const correctReg = REGIONS[target.regionCode];
       const otherRegs = shuffle(Object.values(REGIONS).filter((r) => r.code !== target.regionCode)).slice(0, 3);
@@ -269,6 +270,30 @@ export function generateQcmQuestions(
         explanation: `${g.withArticle} (${target.code}, chef-lieu : ${target.prefecture}) est rattaché à ${getRegionGrammar(correctReg.name).withArticle}.`,
         targetCode: target.code,
         relatedCodes: correctReg.departments,
+      });
+    } else {
+      // Spécialité / fait marquant
+      const specs = (target.specialties || []).filter(Boolean);
+      const correct = specs[0] || target.academicFact?.slice(0, 42) || target.prefecture;
+      const otherSpecs: string[] = [];
+      for (const d of shuffle(DEPARTMENTS_LIST)) {
+        if (d.code === target.code) continue;
+        for (const s of d.specialties || []) {
+          if (s !== correct && !otherSpecs.includes(s)) otherSpecs.push(s);
+          if (otherSpecs.length >= 3) break;
+        }
+        if (otherSpecs.length >= 3) break;
+      }
+      while (otherSpecs.length < 3) otherSpecs.push(`Repère ${otherSpecs.length + 1}`);
+      const options = shuffle([correct, ...otherSpecs.slice(0, 3)]);
+      questions.push({
+        id: `qcm-spec-${target.code}-${i}`,
+        title: `Quelle spécialité / signature est associée à ${getDeptGrammar(target.code).withArticle} ?`,
+        options,
+        correctIndex: options.indexOf(correct),
+        explanation: `${getDeptGrammar(target.code).withArticle} (${target.code}) : ${specs.slice(0, 2).join(', ') || target.academicFact}`,
+        targetCode: target.code,
+        relatedCodes: [target.code],
       });
     }
   }
@@ -308,19 +333,35 @@ export interface SilhouetteRound {
   correctIndex: number;
 }
 
-export function generateSilhouetteRounds(count: number = 10, regionCode?: string): SilhouetteRound[] {
+export function generateSilhouetteRounds(
+  count: number = 10,
+  regionCode?: string,
+  difficulty: GameDifficulty = 'intermediaire'
+): SilhouetteRound[] {
   const validPaths = regionCode && REGIONS[regionCode]
     ? DEPARTMENT_MAP_PATHS.filter((p) => REGIONS[regionCode].departments.includes(p.code))
     : DEPARTMENT_MAP_PATHS;
 
-  const pool = shuffle(validPaths).slice(0, count);
+  const takePadded = <T,>(pool: T[], n: number): T[] => {
+    if (pool.length === 0) return [];
+    const out: T[] = [];
+    const shuffled = shuffle(pool);
+    let i = 0;
+    while (out.length < n) {
+      out.push(shuffled[i % shuffled.length]);
+      i += 1;
+      if (i > shuffled.length * 4) break;
+    }
+    return out;
+  };
+
+  const pool = takePadded(validPaths, count);
   const rounds: SilhouetteRound[] = [];
 
   for (const targetPath of pool) {
     const targetDept = DEPARTMENTS[targetPath.code];
     if (!targetDept) continue;
 
-    // Pick 3 distractors
     const sameRegionPaths = DEPARTMENT_MAP_PATHS.filter(
       (p) => p.code !== targetPath.code && DEPARTMENTS[p.code]?.regionCode === targetDept.regionCode
     );
@@ -329,9 +370,10 @@ export function generateSilhouetteRounds(count: number = 10, regionCode?: string
     );
 
     const distractorDepts: Department[] = [];
+    const sameFirst = difficulty === 'expert' ? 3 : difficulty === 'debutant' ? 1 : 2;
     for (const p of shuffle(sameRegionPaths)) {
       if (DEPARTMENTS[p.code]) distractorDepts.push(DEPARTMENTS[p.code]);
-      if (distractorDepts.length >= 2) break;
+      if (distractorDepts.length >= sameFirst) break;
     }
     for (const p of shuffle(otherPaths)) {
       if (DEPARTMENTS[p.code] && !distractorDepts.some((d) => d.code === p.code)) {
@@ -352,9 +394,7 @@ export function generateSilhouetteRounds(count: number = 10, regionCode?: string
   return rounds;
 }
 
-// -------------------------------------------------------------
-// 5. ENQUÊTES TERRITORIALES
-// -------------------------------------------------------------
+
 const ENQUETES_LIST: EnqueteTerritoire[] = [
   {
     id: 'enquete-33',
@@ -508,6 +548,111 @@ const ENQUETES_LIST: EnqueteTerritoire[] = [
   },
 ];
 
-export function generateEnquetes(count: number = 5): EnqueteTerritoire[] {
-  return shuffle(ENQUETES_LIST).slice(0, count);
+
+function buildAutoEnquetes(): EnqueteTerritoire[] {
+  const preferred = [
+    '75','13','69','33','31','44','59','06','67','29',
+    '35','34','74','83','38','63','21','76','57','11',
+    '30','34','40','64','85','14','22','56','2A','971',
+  ];
+  const seen = new Set<string>();
+  const out: EnqueteTerritoire[] = [];
+
+  const pushFromDept = (code: string) => {
+    if (seen.has(code)) return;
+    const d = DEPARTMENTS[code];
+    if (!d) return;
+    seen.add(code);
+    const hydro = (d.hydrography || []).slice(0, 2).join(' / ') || 'réseau hydrographique local';
+    const specs = (d.specialties || []).slice(0, 2).join(' et ') || 'activités territoriales marquantes';
+    const fact = d.academicFact || `${d.name} occupe une place structurante dans ${d.regionName}.`;
+    out.push({
+      id: `enquete-auto-${code}`,
+      targetCode: d.code,
+      targetName: d.name,
+      regionName: d.regionName,
+      prefecture: d.prefecture,
+      clues: [
+        {
+          label: 'Hydrographie',
+          text: `Territoire structuré autour de : ${hydro}.`,
+          category: 'physique',
+        },
+        {
+          label: 'Spécialités',
+          text: `On y reconnaît notamment ${specs}.`,
+          category: 'terroir',
+        },
+        {
+          label: 'Chef-lieu',
+          text: `Sa préfecture est une ville-pivot du tissu régional (initiale « ${d.prefecture[0]} »).`,
+          category: 'urbain',
+        },
+        {
+          label: 'Fait universitaire',
+          text: fact.length > 160 ? fact.slice(0, 157) + '…' : fact,
+          category: 'amenagement',
+        },
+      ],
+      explanation: `${d.name} (${d.code}) — préfecture ${d.prefecture}, région ${d.regionName}. ${fact}`,
+    });
+  };
+
+  for (const code of preferred) pushFromDept(code);
+  for (const d of shuffle(DEPARTMENTS_LIST)) {
+    if (out.length >= 36) break;
+    pushFromDept(d.code);
+  }
+  return out;
 }
+
+export function generateEnquetes(
+  count: number = 5,
+  difficulty: GameDifficulty = 'intermediaire',
+  regionCode?: string
+): EnqueteTerritoire[] {
+  const auto = buildAutoEnquetes();
+  let pool = [...ENQUETES_LIST, ...auto];
+
+  // Deduplicate by targetCode (handmade first)
+  const byCode = new Map<string, EnqueteTerritoire>();
+  for (const e of pool) {
+    if (!byCode.has(e.targetCode)) byCode.set(e.targetCode, e);
+  }
+  pool = Array.from(byCode.values());
+
+  if (regionCode) {
+    pool = pool.filter((e) => DEPARTMENTS[e.targetCode]?.regionCode === regionCode);
+  }
+
+  // Difficulty: shuffle clue order; expert starts vaguer (we'll reverse clues)
+  pool = shuffle(pool).map((e) => {
+    const clues = [...e.clues];
+    if (difficulty === 'expert') {
+      // put terroir/amenagement first (vaguer), urbaine last
+      clues.sort((a, b) => {
+        const rank = (c: EnqueteClue) =>
+          c.category === 'terroir' ? 0 : c.category === 'amenagement' ? 1 : c.category === 'physique' ? 2 : 3;
+        return rank(a) - rank(b);
+      });
+    } else if (difficulty === 'debutant') {
+      clues.sort((a, b) => {
+        const rank = (c: EnqueteClue) =>
+          c.category === 'urbain' ? 0 : c.category === 'physique' ? 1 : 2;
+        return rank(a) - rank(b);
+      });
+    }
+    return { ...e, clues };
+  });
+
+  if (pool.length === 0) pool = shuffle(ENQUETES_LIST);
+  const out: EnqueteTerritoire[] = [];
+  let i = 0;
+  while (out.length < count && pool.length > 0) {
+    out.push(pool[i % pool.length]);
+    i += 1;
+    if (i > pool.length * 3) break;
+  }
+  return out;
+}
+
