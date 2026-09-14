@@ -12,6 +12,8 @@ import {
 import { soundManager } from '../../lib/audio';
 import { RotateCcw, Search, Compass } from 'lucide-react';
 
+const NOUVELLE_AQUITAINE_BOUNDARY_PATH = REGION_BOUNDARIES['75'].path.replaceAll('Z', '');
+
 export interface HeroicFranceMapProps {
   onDepartmentClick?: (code: string) => void;
   onRegionClick?: (regionCode: string) => void;
@@ -472,17 +474,6 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           </>
         )}
 
-        {focusedRegionCode &&
-          !['01', '02', '03', '04', '06'].includes(focusedRegionCode) &&
-          REGION_BOUNDARIES[focusedRegionCode] && (
-            <path
-              d={REGION_BOUNDARIES[focusedRegionCode].path}
-              fill="#ECE4D8"
-              filter="url(#plateau-shadow)"
-              pointerEvents="none"
-            />
-          )}
-
         {/* 3. DROM WOODEN / IVORY MEDALLIONS (Guadeloupe, Martinique, Guyane, Réunion, Mayotte) */}
         {focusedRegionCode && currentView !== 'idf' &&
           visibleDepartmentPaths.filter((d) => d.isDrom && d.insetBox).map((d) => {
@@ -614,7 +605,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
               <g key={`groove-${regCode}`}>
                 {/* Soft groove ambient shadow */}
                 <path
-                  d={regData.path}
+                  d={regCode === '75' ? NOUVELLE_AQUITAINE_BOUNDARY_PATH : regData.path}
                   fill="none"
                   stroke="#4D3828"
                   strokeWidth={isRegHovered || isRegTarget ? 3.4 : 2.5}
@@ -624,7 +615,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
                 />
                 {/* Carved groove line */}
                 <path
-                  d={regData.path}
+                  d={regCode === '75' ? NOUVELLE_AQUITAINE_BOUNDARY_PATH : regData.path}
                   fill="none"
                   stroke={
                     isRegTarget
