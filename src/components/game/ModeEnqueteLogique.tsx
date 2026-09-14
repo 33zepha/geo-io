@@ -120,7 +120,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="p-1.5 rounded-lg bg-creme-100 hover:bg-creme-200 text-clay-muted hover:text-clay transition cursor-pointer shrink-0"
+            className="touch-target flex items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer shrink-0"
             title="Quitter la partie"
           >
             <X className="w-4 h-4" />
@@ -141,49 +141,51 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       </div>
 
       {/* Middle Stage: Split Clues (left) & Map (right) */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-5 md:grid-rows-1 gap-2.5 overflow-hidden">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,38%)_minmax(0,1fr)] gap-2 overflow-hidden md:grid-cols-5 md:grid-rows-1 md:gap-2.5">
         {/* Clues Card (Left 2 cols) */}
-        <div className="md:col-span-2 max-h-[210px] md:max-h-none bg-white border border-clay-border/80 rounded-2xl p-3 shadow-sm flex flex-col justify-between overflow-hidden gap-2">
-          <div className="flex items-center justify-between gap-2 shrink-0 border-b border-clay-border/60 pb-2">
+        <div className="flex min-h-0 flex-col gap-2 overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3 shadow-sm md:col-span-2 md:max-h-none">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-clay-border/60 pb-2">
             <span className="text-xs font-bold text-clay">
               Indices ({revealedCluesCount}/{currentEnquete.clues.length})
             </span>
 
-            {!isAnswered && (
-              <button
-                type="button"
-                onClick={() => {
-                  soundManager.playClick(380);
-                  setFeedback({ code: currentEnquete.targetCode, isCorrect: false });
-                  setIsAnswered(true);
-                  setRevealedCluesCount(currentEnquete.clues.length);
-                  setResults((prev) => [
-                    ...prev,
-                    {
-                      title: `Enquête : ${currentEnquete.targetName}`,
-                      targetName: currentEnquete.targetName,
-                      targetCode: currentEnquete.targetCode,
-                      isCorrect: false,
-                      scoreEarned: 0,
-                      explanation: currentEnquete.explanation,
-                      userAnswer: 'Passé',
-                    },
-                  ]);
-                }}
-                className="px-2.5 py-1 rounded-lg border border-clay-border bg-white text-clay-muted text-xs font-bold hover:bg-creme-100"
-              >
-                Passer
-              </button>
-            )}
-            {!isAnswered && revealedCluesCount < currentEnquete.clues.length && (
-              <button
-                onClick={handleRevealNextClue}
-                className="px-2.5 py-1 rounded-lg bg-creme-100 hover:bg-creme-200 border border-clay-border text-clay text-xs font-bold transition flex items-center gap-1 cursor-pointer"
-              >
-                <HelpCircle className="w-3.5 h-3.5 text-terracotta" />
-                <span>+ Indice</span>
-              </button>
-            )}
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              {!isAnswered && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick(380);
+                    setFeedback({ code: currentEnquete.targetCode, isCorrect: false });
+                    setIsAnswered(true);
+                    setRevealedCluesCount(currentEnquete.clues.length);
+                    setResults((prev) => [
+                      ...prev,
+                      {
+                        title: `Enquête : ${currentEnquete.targetName}`,
+                        targetName: currentEnquete.targetName,
+                        targetCode: currentEnquete.targetCode,
+                        isCorrect: false,
+                        scoreEarned: 0,
+                        explanation: currentEnquete.explanation,
+                        userAnswer: 'Passé',
+                      },
+                    ]);
+                  }}
+                  className="min-h-11 px-3 py-2 rounded-xl border border-clay-border bg-white text-clay-muted text-xs font-bold hover:bg-creme-100"
+                >
+                  Passer
+                </button>
+              )}
+              {!isAnswered && revealedCluesCount < currentEnquete.clues.length && (
+                <button
+                  onClick={handleRevealNextClue}
+                  className="min-h-11 px-3 py-2 rounded-xl bg-creme-100 hover:bg-creme-200 border border-clay-border text-clay text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                >
+                  <HelpCircle className="w-3.5 h-3.5 text-terracotta" />
+                  <span>+ Indice</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* List of Revealed Clues (Scrollable inside card if needed) */}
@@ -221,7 +223,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
 
           {/* Answer Reveal Floating Overlay */}
           {isAnswered && (
-            <div className="absolute bottom-14 left-1/2 sm:bottom-3 -translate-x-1/2 z-40 w-[94%] max-w-md">
+            <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,24rem)] -translate-x-1/2 sm:bottom-3">
               <div
                 className={`p-3 rounded-xl border shadow-md flex items-center justify-between gap-3 ${
                   feedback?.isCorrect

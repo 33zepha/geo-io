@@ -85,8 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in sm:items-center sm:p-4">
-      <div className="panel-enter relative flex max-h-[min(92dvh,40rem)] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl">
-      <div className="space-y-5 overflow-y-auto p-6 scrollbar-thin sm:p-7">
+      <div className="panel-enter relative flex max-h-[min(92dvh,40rem)] w-full max-w-none flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg safe-bottom sm:max-w-md sm:rounded-3xl">
         {isDismissible && (
           <button
             type="button"
@@ -94,142 +93,144 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               soundManager.playClick(380);
               onClose();
             }}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-creme-100 hover:bg-creme-200 text-clay-muted hover:text-clay transition cursor-pointer"
+            className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-xl bg-creme-100 text-clay-muted transition hover:bg-creme-200 hover:text-clay"
             title="Fermer"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         )}
 
-        <div className="text-center space-y-1.5 pt-1">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta text-2xl font-bold shadow-2xs">
-            🏛️
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-honey-light border border-honey/40 text-honey-dark text-[11px] font-bold uppercase tracking-wider">
-            <span>Promotion L1 • Geo.io</span>
-          </div>
-          <h2 className="text-xl font-black text-clay font-display">
-            {tab === 'register' ? 'Rejoindre la Promotion' : 'Connexion Étudiante'}
-          </h2>
-          <p className="text-xs text-clay-muted font-medium max-w-xs mx-auto leading-relaxed">
-            {tab === 'register'
-              ? 'Créez votre profil pour participer aux épreuves et au classement.'
-              : 'Retrouvez votre profil, votre progression et votre place au classement.'}
-          </p>
-        </div>
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-5 scrollbar-thin sm:p-7">
+            <div className="space-y-1.5 pt-1 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-terracotta/20 bg-terracotta/10 text-2xl font-bold text-terracotta shadow-2xs">
+                🏛️
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-honey/40 bg-honey-light px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-honey-dark">
+                <span>Promotion L1 • Geo.io</span>
+              </div>
+              <h2 className="font-display text-xl font-black text-clay">
+                {tab === 'register' ? 'Rejoindre la Promotion' : 'Connexion Étudiante'}
+              </h2>
+              <p className="mx-auto max-w-xs text-xs font-medium leading-relaxed text-clay-muted">
+                {tab === 'register'
+                  ? 'Créez votre profil pour participer aux épreuves et au classement.'
+                  : 'Retrouvez votre profil, votre progression et votre place au classement.'}
+              </p>
+            </div>
 
-        <div className="flex p-1 bg-creme-100 rounded-xl border border-clay-border text-xs font-bold">
-          <button
-            type="button"
-            onClick={() => changeTab('register')}
-            className={`pressable flex-1 cursor-pointer rounded-lg py-2.5 transition-all ${
-              tab === 'register'
-                ? 'bg-white text-clay shadow-xs border border-clay-border/40'
-                : 'text-clay-muted hover:text-clay'
-            }`}
-          >
-            Créer un compte
-          </button>
-          <button
-            type="button"
-            onClick={() => changeTab('login')}
-            className={`pressable flex-1 cursor-pointer rounded-lg py-2.5 transition-all ${
-              tab === 'login'
-                ? 'bg-white text-clay shadow-xs border border-clay-border/40'
-                : 'text-clay-muted hover:text-clay'
-            }`}
-          >
-            Se connecter
-          </button>
-        </div>
+            <div className="flex rounded-xl border border-clay-border bg-creme-100 p-1 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => changeTab('register')}
+                className={`pressable min-h-11 flex-1 cursor-pointer rounded-lg py-2.5 transition-all ${
+                  tab === 'register'
+                    ? 'border border-clay-border/40 bg-white text-clay shadow-xs'
+                    : 'text-clay-muted hover:text-clay'
+                }`}
+              >
+                Créer un compte
+              </button>
+              <button
+                type="button"
+                onClick={() => changeTab('login')}
+                className={`pressable min-h-11 flex-1 cursor-pointer rounded-lg py-2.5 transition-all ${
+                  tab === 'login'
+                    ? 'border border-clay-border/40 bg-white text-clay shadow-xs'
+                    : 'text-clay-muted hover:text-clay'
+                }`}
+              >
+                Se connecter
+              </button>
+            </div>
 
-        {error && (
-          <div className="fade-rise rounded-2xl border border-coral/30 bg-coral-light p-3 text-xs font-medium leading-relaxed text-coral-dark">
-            {error}
-          </div>
-        )}
+            {error && (
+              <div className="fade-rise rounded-2xl border border-coral/30 bg-coral-light p-3 text-xs font-medium leading-relaxed text-coral-dark">
+                {error}
+              </div>
+            )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {tab === 'register' && (
+            {tab === 'register' && (
+              <div className="space-y-1.5">
+                <label className="block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+                  Pseudo au classement
+                </label>
+                <div className="relative">
+                  <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-clay-muted" />
+                  <input
+                    type="text"
+                    required
+                    autoFocus
+                    value={pseudo}
+                    onChange={(event) => setPseudo(event.target.value)}
+                    placeholder="Ex : Lucas_Sorbonne"
+                    maxLength={24}
+                    autoComplete="nickname"
+                    className="w-full rounded-xl border border-clay-border bg-creme-100/50 py-3 pl-10 pr-3 text-base font-semibold text-clay transition placeholder:text-clay-subtle focus:border-terracotta focus:bg-white focus:outline-none sm:text-xs"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1.5">
-              <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted">
-                Pseudo au classement
+              <label className="block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+                Adresse email
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-clay-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-clay-muted" />
                 <input
-                  type="text"
+                  type="email"
                   required
-                  autoFocus
-                  value={pseudo}
-                  onChange={(event) => setPseudo(event.target.value)}
-                  placeholder="Ex : Lucas_Sorbonne"
-                  maxLength={24}
-                  autoComplete="nickname"
-                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-creme-100/50 border border-clay-border text-base sm:text-xs font-semibold text-clay placeholder:text-clay-subtle focus:bg-white focus:outline-none focus:border-terracotta transition"
+                  autoFocus={tab === 'login'}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="etudiant@universite.fr"
+                  autoComplete="email"
+                  className="w-full rounded-xl border border-clay-border bg-creme-100/50 py-3 pl-10 pr-3 text-base font-semibold text-clay transition placeholder:text-clay-subtle focus:border-terracotta focus:bg-white focus:outline-none sm:text-xs"
                 />
               </div>
             </div>
-          )}
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted">
-              Adresse email
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-clay-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="email"
-                required
-                autoFocus={tab === 'login'}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="etudiant@universite.fr"
-                autoComplete="email"
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-creme-100/50 border border-clay-border text-base sm:text-xs font-semibold text-clay placeholder:text-clay-subtle focus:bg-white focus:outline-none focus:border-terracotta transition"
-              />
+            <div className="space-y-1.5">
+              <label className="block font-display text-xs font-bold uppercase tracking-wider text-clay-muted">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-clay-muted" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="6 caractères minimum"
+                  autoComplete={tab === 'register' ? 'new-password' : 'current-password'}
+                  className="w-full rounded-xl border border-clay-border bg-creme-100/50 py-3 pl-10 pr-3 text-base font-semibold text-clay transition placeholder:text-clay-subtle focus:border-terracotta focus:bg-white focus:outline-none sm:text-xs"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-display font-bold uppercase tracking-wider text-clay-muted">
-              Mot de passe
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-clay-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="6 caractères minimum"
-                autoComplete={tab === 'register' ? 'new-password' : 'current-password'}
-                className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-creme-100/50 border border-clay-border text-base sm:text-xs font-semibold text-clay placeholder:text-clay-subtle focus:bg-white focus:outline-none focus:border-terracotta transition"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-3d flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3 font-display text-xs font-bold text-white shadow-soft transition hover:bg-terracotta-hover disabled:opacity-50"
-          >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <span>{tab === 'register' ? 'Créer mon compte' : 'Se connecter'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-
-          <div className="p-2.5 rounded-xl bg-creme-100/60 border border-clay-border/60 text-[11px] text-clay-muted text-center leading-normal">
-            🔒 Votre session reste enregistrée sur cet appareil jusqu’à la déconnexion.
+          <div className="shrink-0 space-y-2 border-t border-clay-border/70 bg-white px-5 py-3 sm:px-7">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-3d flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              ) : (
+                <>
+                  <span>{tab === 'register' ? 'Créer mon compte' : 'Se connecter'}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+            <p className="text-center text-[11px] leading-normal text-clay-muted">
+              🔒 Session enregistrée sur cet appareil jusqu’à déconnexion.
+            </p>
           </div>
         </form>
-      </div>
       </div>
     </div>
   );

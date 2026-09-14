@@ -111,13 +111,13 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="p-1.5 rounded-lg bg-creme-100 hover:bg-creme-200 text-clay-muted hover:text-clay transition cursor-pointer shrink-0"
+            className="touch-target flex items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer shrink-0"
             title="Quitter la partie"
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="truncate">
-            <h2 className="text-sm sm:text-base font-display font-extrabold text-clay truncate">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm sm:text-base font-display font-extrabold text-clay line-clamp-2 sm:truncate">
               {currentQ.title}
             </h2>
           </div>
@@ -151,14 +151,14 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
 
         {/* Floating Answer Explanation & Next Button inside Map */}
         {isAnswered && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-lg">
+          <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,28rem)] -translate-x-1/2 sm:bottom-3">
             <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
               <p className="text-xs text-clay leading-snug font-medium line-clamp-4 sm:line-clamp-none">
                 💡 {currentQ.explanation}
               </p>
               <button
                 onClick={handleNext}
-                className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer"
+                className="min-h-11 px-4 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer"
               >
                 <span>{currentIndex + 1 >= questions.length ? 'Bilan' : 'Suivant'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -191,13 +191,13 @@ export const ModeQcm: React.FC<ModeQcmProps> = ({
               key={idx}
               disabled={isAnswered}
               onClick={() => handleSelectOption(idx)}
-              className={`p-2.5 sm:p-3 rounded-xl text-left transition cursor-pointer flex items-center justify-between select-none ${btnStyle}`}
+              className={`min-h-12 p-3 rounded-xl text-left transition cursor-pointer flex items-center justify-between select-none ${btnStyle}`}
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <span className={`w-5 h-5 rounded-md text-[11px] font-mono font-bold flex items-center justify-center border shrink-0 ${badgeStyle}`}>
                   {idx + 1}
                 </span>
-                <span className="text-xs sm:text-sm font-semibold text-clay truncate">{opt}</span>
+                <span className="text-xs sm:text-sm font-semibold text-clay line-clamp-2 leading-snug">{opt}</span>
               </div>
 
               {isAnswered && idx === currentQ.correctIndex && (

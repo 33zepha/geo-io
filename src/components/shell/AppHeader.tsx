@@ -45,7 +45,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-1.5 px-2 sm:h-[3.75rem] sm:px-5">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-1 px-2 sm:h-[3.75rem] sm:gap-1.5 sm:px-5">
         {/* Brand & Logo */}
         <button
           onClick={() => {
@@ -76,7 +76,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'quiz' ? 'page' : undefined}
             aria-label="Quiz et défis"
             title="Quiz et défis"
-            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
+            className={`pressable relative flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
               activeTab === 'quiz'
                 ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30'
@@ -94,7 +94,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'mastery' ? 'page' : undefined}
             aria-label="Carte de maîtrise"
             title="Carte de maîtrise"
-            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
+            className={`pressable relative flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
               activeTab === 'mastery'
                 ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-sage/30'
@@ -117,7 +117,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             aria-current={activeTab === 'ranking' ? 'page' : undefined}
             aria-label="Classement de la promotion"
             title="Classement de la promotion"
-            className={`pressable relative flex h-10 min-w-10 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
+            className={`pressable relative flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-2 outline-none transition-all duration-200 md:px-3.5 ${
               activeTab === 'ranking'
                 ? 'bg-white font-bold text-clay shadow-xs ring-1 ring-clay-border/60'
                 : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-honey/30'
@@ -142,7 +142,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30"
+            className="pressable flex h-11 w-11 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30"
             title={soundEnabled ? 'Couper le son' : 'Activer le son'}
             aria-label={soundEnabled ? 'Couper le son' : 'Activer le son'}
           >
@@ -159,7 +159,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(500);
               onOpenProfile();
             }}
-            className="pressable flex h-10 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5"
+            className="pressable flex h-11 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5"
             title="Mon profil et promotion"
             aria-label="Ouvrir mon profil"
           >

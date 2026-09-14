@@ -48,7 +48,7 @@ const InnerAppShell: React.FC = () => {
   // 1. Loading splash screen while verifying persistent session
   if (isLoading) {
     return (
-      <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col items-center justify-center font-sans relative select-none">
+      <div className="relative flex h-[100dvh] w-screen select-none flex-col items-center justify-center overflow-hidden bg-[#FAF7F2] font-sans text-[#2C2623] safe-bottom safe-x">
         <CartographicBackground />
         <div className="relative z-10 flex flex-col items-center gap-3 p-6 rounded-3xl bg-white/70 border border-clay-border/60 backdrop-blur-md shadow-soft animate-panel-in">
           <div className="w-12 h-12 rounded-2xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta text-2xl font-bold animate-pulse">
@@ -68,7 +68,7 @@ const InnerAppShell: React.FC = () => {
   // 2. Mandatory Authentication Gate : access is strictly reserved to verified students
   if (!isAuthenticated) {
     return (
-      <div className="h-screen h-[100dvh] w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col items-center justify-center font-sans relative select-none">
+      <div className="relative flex h-[100dvh] w-screen select-none flex-col items-center justify-center overflow-hidden bg-[#FAF7F2] font-sans text-[#2C2623] safe-bottom safe-x">
         <CartographicBackground />
         <AuthModal
           isOpen={true}
@@ -80,7 +80,7 @@ const InnerAppShell: React.FC = () => {
   }
 
   return (
-    <div className="h-screen h-[100dvh] max-h-screen w-screen overflow-hidden bg-[#FAF7F2] text-[#2C2623] flex flex-col selection:bg-honey-soft selection:text-clay font-sans relative select-none">
+    <div className="relative flex h-[100dvh] max-h-[100dvh] w-screen select-none flex-col overflow-hidden bg-[#FAF7F2] font-sans text-[#2C2623] selection:bg-honey-soft selection:text-clay safe-bottom safe-x">
       {/* Subtle Clean Ambient Background */}
       <CartographicBackground />
 
@@ -97,7 +97,7 @@ const InnerAppShell: React.FC = () => {
       />
 
       {/* Main Game Arena */}
-      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-center justify-center overflow-hidden px-3 py-2 sm:px-5 sm:py-3">
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-3 pb-2 pt-1 sm:items-center sm:justify-center sm:px-5 sm:py-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab === 'quiz' ? `quiz-${resetKey}` : activeTab}

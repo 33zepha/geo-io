@@ -229,7 +229,7 @@ export const GameHub: React.FC<GameHubProps> = ({
   const sortedRegions = Object.values(REGIONS).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
-    <div className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden">
+    <div className="flex h-full max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center">
       <AnimatePresence mode="wait">
         {screen === 'menu' && (
           <motion.div 
@@ -238,7 +238,7 @@ export const GameHub: React.FC<GameHubProps> = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-center space-y-3 overflow-y-auto scrollbar-thin sm:space-y-4"
+            className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-start space-y-3 overflow-y-auto overscroll-contain scrollbar-thin sm:justify-center sm:space-y-4"
           >
             {/* Header Title */}
             <motion.div variants={itemVariants} className="text-center space-y-0.5">
@@ -254,7 +254,7 @@ export const GameHub: React.FC<GameHubProps> = ({
             {isCatchUpActive && catchUpCodes && catchUpCodes.length > 0 && (
               <motion.div
                 variants={itemVariants}
-                className="fade-rise flex shrink-0 items-center justify-between gap-3 rounded-xl border border-honey/30 bg-honey-light px-3.5 py-2.5 text-clay shadow-xs"
+                className="fade-rise flex shrink-0 flex-col gap-2 rounded-xl border border-honey/30 bg-honey-light px-3.5 py-2.5 text-clay shadow-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-honey/40 bg-white text-honey-dark">
@@ -311,7 +311,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                           if (isLockedByCatchUp) return;
                           setSettings({ ...settings, mode: m.id });
                         }}
-                        className={`pressable flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition ${
+                        className={`pressable flex min-h-[4.75rem] cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition ${
                           isSelected
                             ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs ring-1 ring-terracotta/20'
                             : 'bg-white/80 border-clay-border hover:bg-white text-clay'
@@ -360,10 +360,10 @@ export const GameHub: React.FC<GameHubProps> = ({
                         soundManager.playClick(430);
                         setSettings({ ...settings, regionCode: undefined });
                       }}
-                      className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex items-center justify-between ${
+                      className={`flex min-h-11 cursor-pointer items-center justify-between rounded-xl border p-2.5 text-left transition ${
                         !settings.regionCode
-                          ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs font-bold text-clay'
-                          : 'bg-white/80 border-clay-border hover:bg-white text-clay-muted'
+                          ? 'border-b-2 border-terracotta border-b-terracotta-dark bg-white font-bold text-clay shadow-xs'
+                          : 'border-clay-border bg-white/80 text-clay-muted hover:bg-white'
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
@@ -382,10 +382,10 @@ export const GameHub: React.FC<GameHubProps> = ({
                             regionCode: e.target.value ? e.target.value : undefined 
                           });
                         }}
-                        className={`w-full h-full p-2.5 rounded-xl border text-xs font-bold transition cursor-pointer appearance-none bg-white/80 pr-6 ${
+                        className={`h-full w-full cursor-pointer appearance-none rounded-xl border bg-white/80 p-2.5 pr-6 text-base font-bold transition sm:text-xs ${
                           settings.regionCode
-                            ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs text-clay'
-                            : 'border-clay-border hover:bg-white text-clay-muted'
+                            ? 'border-b-2 border-terracotta border-b-terracotta-dark bg-white text-clay shadow-xs'
+                            : 'border-clay-border text-clay-muted hover:bg-white'
                         }`}
                       >
                         <option value="">Grand Tour (Région)...</option>
@@ -418,10 +418,10 @@ export const GameHub: React.FC<GameHubProps> = ({
                             soundManager.playClick(480);
                             setSettings({ ...settings, difficulty: d.id });
                           }}
-                          className={`py-2 px-2.5 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center ${
+                          className={`flex min-h-11 cursor-pointer flex-col items-center justify-center rounded-xl border px-2.5 py-2 text-center transition ${
                             isSelected
-                              ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs text-clay font-bold'
-                              : 'bg-white/80 border-clay-border hover:bg-white text-clay-muted'
+                              ? 'border-b-2 border-terracotta border-b-terracotta-dark bg-white font-bold text-clay shadow-xs'
+                              : 'border-clay-border bg-white/80 text-clay-muted hover:bg-white'
                           }`}
                         >
                           <span className="text-xs font-bold">{d.title}</span>
@@ -448,9 +448,9 @@ export const GameHub: React.FC<GameHubProps> = ({
                               soundManager.playClick(420);
                               setSettings({ ...settings, questionCount: count });
                             }}
-                            className={`px-3 py-1 rounded-lg border text-center transition cursor-pointer text-xs font-bold ${
+                            className={`min-h-10 min-w-10 px-3 py-2 rounded-lg border text-center transition cursor-pointer text-xs font-bold ${
                               isSelected
-                                ? 'bg-white border-clay-darkborder border-b-2 shadow-xs text-terracotta'
+                                ? 'bg-white border-clay-border border-b-2 shadow-xs text-terracotta'
                                 : 'bg-white/80 border-clay-border hover:bg-white text-clay-muted'
                             }`}
                           >
@@ -478,7 +478,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'clic_carte' && (
           <motion.div
             key="playing-clic"
-            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
+            className="flex h-full min-h-0 max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -496,7 +496,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'qcm' && (
           <motion.div
             key="playing-qcm"
-            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
+            className="flex h-full min-h-0 max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -514,7 +514,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'silhouette' && (
           <motion.div
             key="playing-silhouette"
-            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
+            className="flex h-full min-h-0 max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -531,7 +531,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'playing' && settings.mode === 'enquete_logique' && (
           <motion.div
             key="playing-enquete"
-            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
+            className="flex h-full min-h-0 max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -549,7 +549,7 @@ export const GameHub: React.FC<GameHubProps> = ({
         {screen === 'summary' && summary && (
           <motion.div
             key="summary"
-            className="flex h-full max-h-full w-full flex-col items-center justify-center overflow-hidden"
+            className="flex h-full min-h-0 max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

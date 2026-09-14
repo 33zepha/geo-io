@@ -137,7 +137,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let isMounted = true;
 
+    const isLocalMobilePreview =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('mobilePreview') === '1' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+      process.env.NODE_ENV === 'development';
+
     async function initializeAuth() {
+      // Local-only UI preview (?mobilePreview=1) — no session persisted, never in production builds.
+      if (isLocalMobilePreview) {
+        if (isMounted) {
+          setUser({
+            id: 'mobile-preview',
+            email: 'preview@localhost',
+            pseudo: 'MobilePreview',
+            avatarId: 'boussole',
+            favoriteDept: '75',
+            university: 'Paris 1 Panthéon-Sorbonne',
+            level: 3,
+            xp: 420,
+            streak: 2,
+            masteredDeptsCount: 12,
+            accuracy: 78,
+            createdAt: new Date().toISOString(),
+          });
+          setIsAuthenticated(true);
+          setIsLoading(false);
+        }
+        return;
+      }
+
       if (!isSupabaseConfigured || !supabase) {
         if (isMounted) clearAuthenticatedProfile();
         if (isMounted) setIsLoading(false);
@@ -162,6 +191,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     void initializeAuth();
+
+    if (isLocalMobilePreview) {
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const authListener = supabase?.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session?.user?.email) {

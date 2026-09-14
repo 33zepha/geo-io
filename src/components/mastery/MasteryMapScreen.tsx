@@ -73,33 +73,33 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto h-full max-h-full flex flex-col justify-between gap-2 overflow-hidden select-none">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-5xl select-none flex-col gap-2 overflow-hidden">
       {/* Top Banner & Control Strip */}
-      <div className="bg-white border border-clay-border/80 rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 shadow-sm flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <h1 className="text-sm sm:text-base font-extrabold text-clay font-display tracking-tight">
-            Carte de Maîtrise <span className="text-clay-muted text-xs font-normal hidden sm:inline">(101 départements)</span>
+      <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-clay-border/80 bg-white px-3.5 py-2.5 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+          <h1 className="font-display text-sm font-extrabold tracking-tight text-clay sm:text-base">
+            Carte de Maîtrise <span className="hidden text-xs font-normal text-clay-muted sm:inline">(101 départements)</span>
           </h1>
 
           {/* 4 Status Counters */}
           <div className="flex items-center gap-1.5 text-[11px] font-bold">
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E8F8EE] text-[#208038] border border-[#34A853]/20" title="Maîtrisés">
-              <span className="w-2 h-2 rounded-full bg-[#34A853]" />
+            <span className="flex items-center gap-1 rounded-md border border-[#34A853]/20 bg-[#E8F8EE] px-2 py-0.5 text-[#208038]" title="Maîtrisés">
+              <span className="h-2 w-2 rounded-full bg-[#34A853]" />
               <span>{classification.mastered.length}</span>
             </span>
 
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FEF8E7] text-[#B07D00] border border-[#FBBC04]/20" title="En cours">
-              <span className="w-2 h-2 rounded-full bg-[#FBBC04]" />
+            <span className="flex items-center gap-1 rounded-md border border-[#FBBC04]/20 bg-[#FEF8E7] px-2 py-0.5 text-[#B07D00]" title="En cours">
+              <span className="h-2 w-2 rounded-full bg-[#FBBC04]" />
               <span>{classification.learning.length}</span>
             </span>
 
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#FEECEB] text-[#C5221F] border border-[#EA4335]/20" title="Points faibles">
-              <span className="w-2 h-2 rounded-full bg-[#EA4335]" />
+            <span className="flex items-center gap-1 rounded-md border border-[#EA4335]/20 bg-[#FEECEB] px-2 py-0.5 text-[#C5221F]" title="Points faibles">
+              <span className="h-2 w-2 rounded-full bg-[#EA4335]" />
               <span>{classification.weak.length}</span>
             </span>
 
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-creme-100 text-clay-muted border border-clay-border/60" title="Non explorés">
-              <span className="w-2 h-2 rounded-full bg-[#DDD3C7]" />
+            <span className="flex items-center gap-1 rounded-md border border-clay-border/60 bg-creme-100 px-2 py-0.5 text-clay-muted" title="Non explorés">
+              <span className="h-2 w-2 rounded-full bg-[#DDD3C7]" />
               <span>{classification.undiscovered.length}</span>
             </span>
           </div>
@@ -107,25 +107,25 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
 
         {/* Direct Catch-Up CTA */}
         <button
+          type="button"
           onClick={handleLaunchReview}
-          className="px-3.5 py-1.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition cursor-pointer shrink-0"
+          className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-terracotta px-3.5 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-terracotta-hover sm:w-auto"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
+          <RefreshCw className="h-3.5 w-3.5" />
           <span>
-            {classification.weak.length > 0 
-              ? `Rattraper mes ${classification.weak.length} points faibles`
-              : 'Explorer les territoires inconnus'}
+            {classification.weak.length > 0
+              ? `Rattraper (${classification.weak.length})`
+              : 'Explorer'}
           </span>
-          <ArrowRight className="w-3 h-3" />
+          <ArrowRight className="h-3 w-3" />
         </button>
       </div>
 
-      {/* Main Map Container with Side Inspector Card */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-2.5 overflow-hidden">
-        {/* Map (col-span-2) */}
-        <div className="lg:col-span-2 bg-white border border-clay-border/80 rounded-2xl p-2 shadow-sm relative overflow-hidden flex flex-col items-center justify-center">
+      {/* Main Map + Inspector */}
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-2.5 overflow-hidden lg:grid-cols-3">
+        <div className="relative flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2 shadow-sm lg:col-span-2">
           <HeroicFranceMap
-            className="w-full h-full max-w-full max-h-full"
+            className="h-full max-h-full w-full max-w-full"
             interactive={true}
             showTooltip={true}
             customDeptColors={classification.customColors}
@@ -136,16 +136,22 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
           />
         </div>
 
-        {/* Selected Department Details Inspector (col-span-1) */}
-        <div className="bg-white border border-clay-border/80 rounded-2xl p-3 sm:p-4 shadow-sm flex flex-col justify-between overflow-y-auto">
+        {/* Desktop side inspector / mobile bottom sheet when selected */}
+        <div
+          className={`overflow-y-auto overscroll-contain rounded-t-2xl rounded-b-none border border-clay-border/80 bg-white p-3 shadow-sm safe-bottom sm:rounded-2xl sm:p-4 lg:flex lg:flex-col lg:justify-between ${
+            selectedDept
+              ? 'absolute inset-x-0 bottom-0 z-30 max-h-[46%] lg:static lg:max-h-none lg:rounded-2xl'
+              : 'hidden lg:flex'
+          }`}
+        >
           {selectedDept && selectedDeptGrammar ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-start justify-between gap-2 border-b border-clay-border/60 pb-3">
                 <div>
-                  <div className="text-xs font-mono font-bold text-terracotta">
+                  <div className="font-mono text-xs font-bold text-terracotta">
                     Département {selectedDept.code}
                   </div>
-                  <h3 className="text-lg font-display font-extrabold text-clay">
+                  <h3 className="font-display text-lg font-extrabold text-clay">
                     {selectedDeptGrammar.withArticle}
                   </h3>
                   <div className="text-xs text-clay-muted">
@@ -154,25 +160,25 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => setSelectedCode(null)}
-                  className="p-1.5 rounded-lg bg-creme-100 hover:bg-creme-200 text-clay-muted hover:text-clay transition cursor-pointer"
+                  className="touch-target flex cursor-pointer items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* Performance Stats on this Department */}
-              <div className="bg-creme-100 p-3 rounded-xl border border-clay-border/60 space-y-2">
+              <div className="space-y-2 rounded-xl border border-clay-border/60 bg-creme-100 p-3">
                 <div className="text-xs font-bold text-clay">Mes performances :</div>
                 {selectedDeptStats && selectedDeptStats.attempts > 0 ? (
                   <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="bg-white p-2 rounded-lg border border-clay-border/40">
+                    <div className="rounded-lg border border-clay-border/40 bg-white p-2">
                       <div className="text-base font-extrabold text-clay">
                         {Math.round((selectedDeptStats.correct / selectedDeptStats.attempts) * 100)}%
                       </div>
                       <div className="text-[10px] text-clay-muted">Réussite</div>
                     </div>
-                    <div className="bg-white p-2 rounded-lg border border-clay-border/40">
+                    <div className="rounded-lg border border-clay-border/40 bg-white p-2">
                       <div className="text-base font-extrabold text-clay">
                         {selectedDeptStats.correct} / {selectedDeptStats.attempts}
                       </div>
@@ -180,13 +186,12 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-clay-muted italic">
-                    Aucune question rencontrée sur ce département pour l'instant.
+                  <p className="text-xs italic text-clay-muted">
+                    Aucune question rencontrée sur ce département pour l&apos;instant.
                   </p>
                 )}
               </div>
 
-              {/* Key Geography Facts */}
               <div className="space-y-2 text-xs">
                 <div>
                   <span className="font-bold text-clay">Région : </span>
@@ -199,26 +204,26 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
                   </div>
                 )}
                 {selectedDept.academicFact && (
-                  <p className="text-xs text-clay-muted bg-creme-50 p-2.5 rounded-lg border border-clay-border/40 leading-relaxed">
+                  <p className="rounded-lg border border-clay-border/40 bg-creme-50 p-2.5 text-xs leading-relaxed text-clay-muted">
                     📖 {selectedDept.academicFact}
                   </p>
                 )}
               </div>
 
-              {/* Practice Single Department Button */}
               <button
+                type="button"
                 onClick={() => onStartWeakPointsSession([selectedDept.code])}
-                className="w-full py-2.5 rounded-xl bg-creme-100 hover:bg-creme-200 border border-clay-border text-clay font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+                className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-clay-border bg-creme-100 py-2.5 text-xs font-bold text-clay transition hover:bg-creme-200"
               >
-                <Target className="w-3.5 h-3.5 text-terracotta" />
-                <span>M'entraîner sur ce territoire</span>
+                <Target className="h-3.5 w-3.5 text-terracotta" />
+                <span>M&apos;entraîner sur ce territoire</span>
               </button>
             </div>
           ) : (
-            <div className="text-center py-12 space-y-2 text-clay-muted">
-              <Compass className="w-8 h-8 text-clay-subtle mx-auto opacity-50" />
+            <div className="hidden space-y-2 py-8 text-center text-clay-muted lg:block">
+              <Compass className="mx-auto h-8 w-8 text-clay-subtle opacity-50" />
               <p className="text-xs font-medium">
-                Sélectionne un département sur la carte pour consulter tes statistiques détaillées et ses spécificités.
+                Sélectionne un département sur la carte pour consulter tes statistiques.
               </p>
             </div>
           )}

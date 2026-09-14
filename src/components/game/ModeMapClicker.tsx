@@ -153,33 +153,33 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
 
   return (
     <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2 overflow-hidden">
-      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-3.5 py-2 shadow-sm sm:px-4 sm:py-2.5">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-clay-border/80 bg-white px-3.5 py-2 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-2.5">
+        <div className="flex min-w-0 items-start gap-3">
           <button
             type="button"
             onClick={() => {
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="cursor-pointer rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-creme-100 text-clay-muted transition hover:bg-creme-200 hover:text-clay"
             title="Quitter la partie"
           >
             <X className="h-4 w-4" />
           </button>
-          <div className="min-w-0">
-            <h2 className="truncate font-display text-base font-extrabold text-clay sm:text-lg">
+          <div className="min-w-0 flex-1">
+            <h2 className="line-clamp-2 font-display text-sm font-extrabold leading-snug text-clay sm:text-lg">
               {currentTarget.prompt}
             </h2>
             {currentTarget.subPrompt && (
-              <p className="mt-0.5 truncate text-xs text-clay-muted">{currentTarget.subPrompt}</p>
+              <p className="mt-0.5 line-clamp-1 text-xs text-clay-muted">{currentTarget.subPrompt}</p>
             )}
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2.5 text-xs font-bold text-clay">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-clay sm:shrink-0 sm:justify-end">
           {isExpertTimed && !isAnswered && (
             <span
-              className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 ${
+              className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 ${
                 timeLeft <= 5
                   ? 'border-coral/40 bg-coral-light text-coral-dark'
                   : 'border-honey/30 bg-honey-light text-honey-dark'
@@ -190,7 +190,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
             </span>
           )}
           {combo > 1 && (
-            <span className="rounded-lg border border-honey/30 bg-honey-light px-2 py-0.5 text-honey-dark">
+            <span className="rounded-lg border border-honey/30 bg-honey-light px-2 py-1 text-honey-dark">
               x{combo}
             </span>
           )}
@@ -209,7 +209,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
 
       <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2 shadow-sm sm:p-3">
         {isExpertTimed && !isAnswered && (
-          <div className="absolute left-3 right-3 top-2 z-30 h-1.5 overflow-hidden rounded-full bg-creme-200">
+          <div className="absolute inset-x-3 top-12 z-20 h-1.5 overflow-hidden rounded-full bg-creme-200">
             <div
               className="h-full rounded-full bg-gradient-to-r from-terracotta to-honey transition-[width] duration-1000 ease-linear"
               style={{ width: `${(timeLeft / EXPERT_SECONDS) * 100}%` }}
@@ -229,7 +229,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         />
 
         {isAnswered && (
-          <div className="absolute bottom-14 left-1/2 z-40 w-[92%] max-w-md -translate-x-1/2 sm:bottom-4">
+          <div className="absolute bottom-[8.5rem] left-1/2 z-40 w-[min(94%,24rem)] -translate-x-1/2 sm:bottom-4">
             <div
               className={`flex items-center justify-between gap-3 rounded-2xl border p-3.5 shadow-md ${
                 feedback?.isCorrect
@@ -267,7 +267,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-terracotta px-4 py-2 text-xs font-bold text-white transition hover:bg-terracotta-hover"
+                className="flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
               >
                 <span>{currentIndex + 1 >= targets.length ? 'Bilan' : 'Suivant'}</span>
                 <ArrowRight className="h-3.5 w-3.5" />

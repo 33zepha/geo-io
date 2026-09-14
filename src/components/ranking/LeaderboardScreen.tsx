@@ -46,7 +46,7 @@ export const LeaderboardScreen: React.FC = () => {
   }, [loadData]);
 
   return (
-    <div className="flex h-full max-h-full w-full select-none flex-col overflow-hidden">
+    <div className="flex h-full max-h-full w-full select-none flex-col overflow-hidden safe-bottom">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-clay-border/70 pb-2">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-terracotta sm:text-xs">
@@ -81,7 +81,7 @@ export const LeaderboardScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto py-2 pr-1">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2 pr-1 pb-4">
         {isLoading ? (
           <div className="flex h-full min-h-48 flex-col items-center justify-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-terracotta/20 border-t-terracotta" />

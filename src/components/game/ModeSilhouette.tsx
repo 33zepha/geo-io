@@ -127,7 +127,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
               soundManager.playClick(400);
               if (confirm('Quitter la session en cours ?')) onQuit();
             }}
-            className="p-1.5 rounded-lg bg-creme-100 hover:bg-creme-200 text-clay-muted hover:text-clay transition cursor-pointer shrink-0"
+            className="touch-target flex items-center justify-center rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay cursor-pointer shrink-0"
             title="Quitter la partie"
           >
             <X className="w-4 h-4" />
@@ -180,14 +180,14 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
 
         {/* Floating Answer Feedback & Advance Button inside Stage */}
         {isAnswered && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-lg">
+          <div className="absolute bottom-4 left-1/2 z-40 w-[min(94%,28rem)] -translate-x-1/2">
             <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
               <div className="text-xs text-clay leading-snug font-medium line-clamp-2 truncate">
                 💡 {targetGrammar.withArticle} • Chef-lieu : <strong>{currentRound.targetDept.prefecture}</strong> ({currentRound.targetDept.regionName}).
               </div>
               <button
                 onClick={handleNext}
-                className="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer"
+                className="min-h-11 px-4 py-2.5 rounded-xl bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition cursor-pointer"
               >
                 <span>{currentIndex + 1 >= rounds.length ? 'Bilan' : 'Suivant'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -198,7 +198,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
       </div>
 
       {/* 4 Clean Options Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
+      <div className="shrink-0">
         {!isAnswered && (
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-[11px] text-clay-muted">Identifie la forme — sans code.</p>
@@ -209,7 +209,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
                 setShowHint(true);
               }}
               disabled={showHint}
-              className="rounded-lg border border-clay-border bg-creme-100 px-2.5 py-1 text-[11px] font-bold text-clay disabled:opacity-50"
+              className="min-h-10 rounded-xl border border-clay-border bg-creme-100 px-3 py-2 text-[11px] font-bold text-clay disabled:opacity-50"
             >
               {showHint ? `Région : ${currentRound.targetDept.regionName}` : 'Indice région (−25 pts)'}
             </button>
@@ -219,7 +219,8 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
           <p className="mb-1 text-[11px] font-semibold text-honey-dark">Région : {currentRound.targetDept.regionName}</p>
         )}
         
-        {currentRound.options.map((opt, idx) => {
+        </div>
+      <div className="grid grid-cols-2 gap-2 shrink-0">{currentRound.options.map((opt, idx) => {
           const optGrammar = getDeptGrammar(opt.code);
           let btnStyle = 'bg-white border border-clay-border border-b-2 hover:border-terracotta/40 hover:bg-creme-50 text-clay active:translate-y-[1px]';
           let badgeStyle = 'bg-creme-100 text-clay-muted border-clay-border';
@@ -241,7 +242,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
               key={opt.code}
               disabled={isAnswered}
               onClick={() => handleSelectOption(idx)}
-              className={`p-2.5 sm:p-3 rounded-xl text-left transition cursor-pointer flex items-center justify-between select-none ${btnStyle}`}
+              className={`min-h-12 p-3 rounded-xl text-left transition cursor-pointer flex items-center justify-between select-none ${btnStyle}`}
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <span className={`w-5 h-5 rounded-md text-[11px] font-mono font-bold flex items-center justify-center border shrink-0 ${badgeStyle}`}>

@@ -4,8 +4,10 @@ import './globals.css';
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
   themeColor: '#FAF7F2',
 };
 
@@ -44,7 +46,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased min-h-screen bg-[#FAF7F2] text-[#2C2623] font-sans">
+      <body className="antialiased h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#FAF7F2] text-[#2C2623] font-sans">
         {children}
       </body>
     </html>

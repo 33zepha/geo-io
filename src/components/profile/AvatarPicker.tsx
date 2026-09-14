@@ -81,7 +81,7 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
               soundManager.playClick(420);
               onSelectFavoriteDept(e.target.value);
             }}
-            className="w-full cursor-pointer rounded-xl border border-clay-border bg-white px-3 py-2.5 text-xs font-medium text-clay focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta"
+            className="w-full cursor-pointer rounded-xl border border-clay-border bg-white px-3 py-2.5 text-base font-medium text-clay focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta sm:text-xs"
           >
             {deptList.map((d) => (
               <option key={d.code} value={d.code}>
@@ -100,7 +100,7 @@ export const AvatarPicker: React.FC<AvatarPickerProps> = ({
             value={university}
             onChange={(e) => onChangeUniversity(e.target.value)}
             placeholder="Ex: Lyon 2, Paris 1…"
-            className="w-full rounded-xl border border-clay-border bg-white px-3 py-2.5 text-xs font-medium text-clay placeholder:text-clay-subtle focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta"
+            className="w-full rounded-xl border border-clay-border bg-white px-3 py-2.5 text-base font-medium text-clay placeholder:text-clay-subtle focus:border-terracotta focus:outline-none focus:ring-1 focus:ring-terracotta sm:text-xs"
           />
         </div>
       </div>

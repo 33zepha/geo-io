@@ -381,7 +381,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
           title="Zoomer sur Paris / Île-de-France pour cliquer facilement sur les petits départements"
         >
           <Search className="w-3.5 h-3.5" />
-          <span>{currentView === 'idf' ? 'Sortir Loupe' : 'Loupe Paris (IDF)'}</span>
+          <span>{currentView === 'idf' ? 'IDF ✕' : 'Loupe IDF'}</span>
         </button>
 
         {/* Reset Camera to Full France */}
@@ -662,8 +662,8 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
       </svg>
 
       {/* Readable, finger-sized overseas selector in the free south-west corner. */}
-      {!focusedRegionCode && (
-        <div className="absolute bottom-2 left-2 z-20 w-[88px] rounded-xl border border-clay-border/80 bg-white/95 p-1.5 shadow-soft backdrop-blur-sm sm:bottom-3 sm:left-3">
+      {(!focusedRegionCode || currentView === 'idf') && (
+        <div className="absolute bottom-2 left-2 z-20 w-[108px] rounded-xl border border-clay-border/80 bg-white/95 p-1.5 shadow-soft backdrop-blur-sm sm:bottom-3 sm:left-3">
           <div className="mb-1 text-center font-display text-[9px] font-bold uppercase tracking-wide text-clay-muted">
             Outre-mer
           </div>
@@ -677,7 +677,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
                   disabled={!interactive}
                   aria-label={`${dept.code} — ${dept.nom}`}
                   title={`${dept.code} — ${dept.nom}`}
-                  className={`h-9 rounded-lg border font-mono text-[10px] font-extrabold transition ${
+                  className={`min-h-11 rounded-lg border font-mono text-[11px] font-extrabold transition ${
                     interactive ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default'
                   }`}
                   style={{

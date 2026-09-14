@@ -148,7 +148,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       />
 
       <div
-        className="panel-enter relative z-10 flex max-h-[min(92dvh,42rem)] w-full max-w-[min(100%,35rem)] flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl"
+        className="panel-enter relative z-10 flex max-h-[min(92dvh,42rem)] w-full max-w-none sm:max-w-[min(100%,35rem)] flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Top bar */}
@@ -203,7 +203,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   value={pseudo}
                   maxLength={24}
                   onChange={(e) => setPseudo(e.target.value)}
-                  className="w-full rounded-xl border border-clay-border bg-creme-100/50 px-3 py-2.5 text-sm font-semibold text-clay transition focus:border-terracotta focus:bg-white focus:outline-none"
+                  className="min-h-12 w-full rounded-xl border border-clay-border bg-creme-100/50 px-3 py-3 text-base font-semibold text-clay transition focus:border-terracotta focus:bg-white focus:outline-none sm:text-sm"
                 />
               </div>
 
