@@ -103,16 +103,14 @@ const InnerAppShell: React.FC = () => {
             onStartWeakPointsSession={handleStartWeakPoints}
           />
         ) : (
-          <LeaderboardScreen 
-            onStartGame={handleResetToHome}
-          />
+          <LeaderboardScreen />
         )}
       </main>
 
       {/* Minimal Game Status Bar */}
       <footer className="w-full h-7 shrink-0 border-t border-clay-border/40 px-4 text-[11px] text-clay-subtle hidden sm:flex items-center justify-between bg-white/40 backdrop-blur-xs relative z-10">
         <span>Geo.io • Promotion L1 & Géographie française</span>
-        <span>101 départements • Classement national & podium 3D</span>
+        <span>101 départements • Classement réel de la promo</span>
       </footer>
 
       {/* Profile Modal */}

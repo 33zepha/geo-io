@@ -1,305 +1,167 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../lib/authContext';
-import { getLeaderboardEntries, fetchLiveLeaderboardEntries } from '../../lib/rankingService';
-import { RankingCategory, RankingPeriod, LeaderboardEntry } from '../../types/ranking';
+import { fetchLiveLeaderboardEntries } from '../../lib/rankingService';
+import { LeaderboardEntry } from '../../types/ranking';
 import { PodiumShowcase } from './PodiumShowcase';
 import { getAvatarById } from '../../data/avatars';
 import { soundManager } from '../../lib/audio';
-import { Trophy, Calendar, Search, MapPin, Sparkles, ArrowRight, Compass, RefreshCw } from 'lucide-react';
+import { MapPin, RefreshCw, Trophy, Users } from 'lucide-react';
 
-interface LeaderboardScreenProps {
-  onStartGame?: () => void;
+interface LeaderboardData {
+  entries: LeaderboardEntry[];
+  top3: LeaderboardEntry[];
+  rest: LeaderboardEntry[];
 }
 
-export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onStartGame }) => {
-  const { user } = useAuth();
-  const [period, setPeriod] = useState<RankingPeriod>('all_time');
-  const [category, setCategory] = useState<RankingCategory>('composite');
-  const [search, setSearch] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+const EMPTY_DATA: LeaderboardData = {
+  entries: [],
+  top3: [],
+  rest: [],
+};
 
-  // Initial local state for immediate render
-  const [data, setData] = useState<{
-    entries: LeaderboardEntry[];
-    top3: LeaderboardEntry[];
-    rest: LeaderboardEntry[];
-    userEntry: LeaderboardEntry | null;
-  }>(() => getLeaderboardEntries(user, period, category, search));
+export const LeaderboardScreen: React.FC = () => {
+  const { user } = useAuth();
+  const [data, setData] = useState<LeaderboardData>(EMPTY_DATA);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
-    setIsRefreshing(true);
+    setIsLoading(true);
+    setLoadError(null);
     try {
-      const live = await fetchLiveLeaderboardEntries(user, period, category, search);
-      setData(live);
-    } catch (e) {
-      console.warn('Leaderboard refresh error:', e);
+      setData(await fetchLiveLeaderboardEntries());
+    } catch (error) {
+      console.warn('Leaderboard refresh error:', error);
+      setData(EMPTY_DATA);
+      setLoadError('Impossible de charger le classement réel pour le moment.');
     } finally {
-      setIsRefreshing(false);
+      setIsLoading(false);
     }
-  }, [user, period, category, search]);
+  }, []);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const { top3, rest, userEntry } = data;
-  const userAvatar = user ? getAvatarById(user.avatarId) : null;
-
   return (
-    <div className="w-full h-full max-h-full flex flex-col justify-between overflow-hidden relative select-none">
-      {/* Top Header & Tactical Filter Bar */}
-      <div className="shrink-0 space-y-2.5 pb-2 border-b border-clay-border/70">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider text-terracotta mb-0.5">
-              <Trophy className="w-3.5 h-3.5" />
-              <span>Classement Général des Étudiants • Promo L1</span>
-            </div>
-            <h1 className="text-lg sm:text-xl font-extrabold text-clay font-display tracking-tight">
-              Arène d'Excellence & Panthéon de Géographie
-            </h1>
+    <div className="flex h-full max-h-full w-full select-none flex-col overflow-hidden">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-clay-border/70 pb-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-terracotta sm:text-xs">
+            <Trophy className="h-3.5 w-3.5" />
+            Classement réel de la promo
           </div>
-
-          {/* Search bar & Refresh */}
-          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-56">
-              <Search className="w-3.5 h-3.5 text-clay-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Chercher un étudiant ou une fac..."
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white border border-clay-border text-xs font-medium text-clay placeholder:text-clay-subtle focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-              />
-            </div>
-            <button
-              onClick={() => {
-                soundManager.playClick(500);
-                loadData();
-              }}
-              disabled={isRefreshing}
-              className="p-2 rounded-xl bg-white hover:bg-creme-100 border border-clay-border text-clay-muted hover:text-clay transition cursor-pointer shadow-2xs shrink-0"
-              title="Actualiser le classement en direct"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-terracotta' : ''}`} />
-            </button>
-          </div>
+          <h1 className="truncate font-display text-lg font-extrabold tracking-tight text-clay sm:text-xl">
+            Les meilleurs géographes
+          </h1>
         </div>
 
-        {/* Filters bar: Period + Category */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Period Toggle */}
-          <div className="flex p-1 bg-creme-100 rounded-xl border border-clay-border text-xs font-bold">
-            <button
-              onClick={() => {
-                soundManager.playClick(420);
-                setPeriod('all_time');
-              }}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                period === 'all_time'
-                  ? 'bg-white text-clay shadow-xs border border-clay-border/40 font-extrabold'
-                  : 'text-clay-muted hover:text-clay'
-              }`}
-            >
-              <Trophy className="w-3.5 h-3.5 text-amber-500" />
-              <span>Général (All-Time)</span>
-            </button>
-            <button
-              onClick={() => {
-                soundManager.playClick(440);
-                setPeriod('weekly');
-              }}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                period === 'weekly'
-                  ? 'bg-white text-clay shadow-xs border border-clay-border/40 font-extrabold'
-                  : 'text-clay-muted hover:text-clay'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5 text-terracotta" />
-              <span>Cette Semaine</span>
-            </button>
-          </div>
-
-          {/* Category Toggle */}
-          <div className="flex p-1 bg-creme-100 rounded-xl border border-clay-border text-xs font-bold">
-            <button
-              onClick={() => {
-                soundManager.playClick(420);
-                setCategory('composite');
-              }}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                category === 'composite'
-                  ? 'bg-white text-clay shadow-xs border border-clay-border/40'
-                  : 'text-clay-muted hover:text-clay'
-              }`}
-            >
-              ⭐ Score d'Excellence
-            </button>
-            <button
-              onClick={() => {
-                soundManager.playClick(440);
-                setCategory('pointage');
-              }}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                category === 'pointage'
-                  ? 'bg-white text-clay shadow-xs border border-clay-border/40'
-                  : 'text-clay-muted hover:text-clay'
-              }`}
-            >
-              ⚡ Vitesse
-            </button>
-            <button
-              onClick={() => {
-                soundManager.playClick(460);
-                setCategory('mastery');
-              }}
-              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                category === 'mastery'
-                  ? 'bg-white text-clay shadow-xs border border-clay-border/40'
-                  : 'text-clay-muted hover:text-clay'
-              }`}
-            >
-              🗺️ 101 Départements
-            </button>
-          </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {!isLoading && !loadError && (
+            <span className="hidden items-center gap-1 text-[11px] font-medium text-clay-muted sm:flex">
+              <Users className="h-3.5 w-3.5" />
+              {data.entries.length} joueur{data.entries.length > 1 ? 's' : ''}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              soundManager.playClick(500);
+              loadData();
+            }}
+            disabled={isLoading}
+            className="rounded-xl border border-clay-border bg-white p-2 text-clay-muted transition hover:bg-creme-100 hover:text-clay disabled:cursor-wait"
+            title="Actualiser les profils Supabase"
+            aria-label="Actualiser le classement"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-terracotta' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {/* Main Scrollable Body: Podium + Ranks 4+ Table */}
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 my-2">
-        {/* 3D Olympic Podium */}
-        <PodiumShowcase top3={top3} />
+      <div className="min-h-0 flex-1 overflow-y-auto py-2 pr-1">
+        {isLoading ? (
+          <div className="flex h-full min-h-48 items-center justify-center text-sm font-medium text-clay-muted">
+            Chargement des profils réels…
+          </div>
+        ) : loadError ? (
+          <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-terracotta/20 bg-terracotta/5 px-6 text-center">
+            <p className="font-display text-sm font-bold text-clay">Classement indisponible</p>
+            <p className="mt-1 text-xs text-clay-muted">{loadError}</p>
+          </div>
+        ) : data.entries.length === 0 ? (
+          <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-clay-border bg-white/60 px-6 text-center">
+            <Users className="mb-2 h-7 w-7 text-clay-subtle" />
+            <p className="font-display text-sm font-bold text-clay">Aucun joueur classé</p>
+            <p className="mt-1 max-w-sm text-xs text-clay-muted">
+              Le classement apparaîtra dès qu’un profil réel sera enregistré dans Supabase.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <PodiumShowcase top3={data.top3} currentUserId={user?.id} />
 
-        {/* Table of Ranks 4 to N */}
-        {rest.length > 0 && (
-          <div className="bg-white rounded-2xl border border-clay-border/80 shadow-xs overflow-hidden">
-            <div className="px-4 py-2 bg-creme-100/80 border-b border-clay-border/60 grid grid-cols-12 text-[10px] font-display font-bold uppercase tracking-wider text-clay-muted">
-              <div className="col-span-1 text-center">Rang</div>
-              <div className="col-span-6 sm:col-span-5">Étudiant & Université</div>
-              <div className="hidden sm:block sm:col-span-3 text-center">Maîtrise & Précision</div>
-              <div className="col-span-5 sm:col-span-3 text-right">Score</div>
-            </div>
+            {data.rest.length > 0 && (
+              <div className="overflow-hidden rounded-xl border border-clay-border/80 bg-white">
+                <div className="grid grid-cols-12 border-b border-clay-border/60 bg-creme-100/80 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-clay-muted">
+                  <div className="col-span-2 text-center sm:col-span-1">Rang</div>
+                  <div className="col-span-7 sm:col-span-6">Joueur</div>
+                  <div className="hidden text-center sm:col-span-2 sm:block">Maîtrise</div>
+                  <div className="col-span-3 text-right">Score</div>
+                </div>
 
-            <div className="divide-y divide-clay-border/40">
-              {rest.map((entry) => {
-                const avatar = getAvatarById(entry.user.avatarId);
-                const isCurrent = user?.id === entry.user.id;
+                <div className="divide-y divide-clay-border/40">
+                  {data.rest.map((entry) => {
+                    const avatar = getAvatarById(entry.user.avatarId);
+                    const isCurrent = user?.id === entry.user.id;
 
-                return (
-                  <div
-                    key={entry.user.id}
-                    className={`px-4 py-2.5 grid grid-cols-12 items-center text-xs transition ${
-                      isCurrent
-                        ? 'bg-amber-50/70 font-bold'
-                        : 'hover:bg-creme-50'
-                    }`}
-                  >
-                    {/* Rank */}
-                    <div className="col-span-1 text-center font-display font-extrabold text-clay-muted">
-                      #{entry.rank}
-                    </div>
-
-                    {/* Student Pseudo & University */}
-                    <div className="col-span-6 sm:col-span-5 flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-creme-200 border border-clay-border flex items-center justify-center text-lg shrink-0">
-                        {avatar.emoji}
-                      </div>
-                      <div className="min-w-0 truncate">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className="font-display font-bold text-clay truncate">
-                            {entry.user.pseudo}
-                          </span>
-                          {entry.user.favoriteDept && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-creme-200 text-clay-muted text-[10px] font-mono font-bold shrink-0">
-                              <MapPin className="w-2.5 h-2.5 text-terracotta" />
-                              {entry.user.favoriteDept}
-                            </span>
-                          )}
-                          {isCurrent && (
-                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-900 font-bold uppercase shrink-0">
-                              Vous
-                            </span>
-                          )}
+                    return (
+                      <div
+                        key={entry.user.id}
+                        className={`grid grid-cols-12 items-center px-3 py-2 text-xs ${
+                          isCurrent ? 'bg-amber-50/70' : ''
+                        }`}
+                      >
+                        <div className="col-span-2 text-center font-display font-extrabold text-clay-muted sm:col-span-1">
+                          #{entry.rank}
                         </div>
-                        <div className="text-[11px] text-clay-muted truncate font-medium">
-                          {entry.user.university || 'Université'}
+                        <div className="col-span-7 flex min-w-0 items-center gap-2 sm:col-span-6">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-clay-border bg-creme-100 text-base">
+                            {avatar.emoji}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1">
+                              <span className="truncate font-display font-bold text-clay">{entry.user.pseudo}</span>
+                              {isCurrent && <span className="text-[9px] uppercase text-terracotta">Vous</span>}
+                            </div>
+                            <div className="flex items-center gap-1 truncate text-[10px] text-clay-muted">
+                              {entry.user.favoriteDept && (
+                                <span className="inline-flex items-center gap-0.5">
+                                  <MapPin className="h-2.5 w-2.5" />
+                                  {entry.user.favoriteDept}
+                                </span>
+                              )}
+                              {entry.user.university && <span className="truncate">{entry.user.university}</span>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="hidden text-center text-[11px] text-clay-muted sm:col-span-2 sm:block">
+                          {entry.masteredCount}/101
+                        </div>
+                        <div className="col-span-3 text-right font-display text-sm font-extrabold text-clay">
+                          {entry.excellenceScore.toLocaleString('fr-FR')}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Mastery & Accuracy (desktop) */}
-                    <div className="hidden sm:block sm:col-span-3 text-center">
-                      <div className="font-display font-bold text-clay">
-                        {entry.masteredCount} / 101 acquis
-                      </div>
-                      <div className="text-[10px] text-clay-muted">
-                        {entry.accuracy}% précision
-                      </div>
-                    </div>
-
-                    {/* Score */}
-                    <div className="col-span-5 sm:col-span-3 text-right">
-                      <div className="font-display font-extrabold text-clay text-sm">
-                        {category === 'pointage'
-                          ? entry.pointageHighScore.toLocaleString('fr-FR')
-                          : category === 'mastery'
-                          ? `${entry.masteredCount} / 101`
-                          : entry.excellenceScore.toLocaleString('fr-FR')}
-                      </div>
-                      <div className="text-[10px] text-clay-muted font-medium">
-                        {category === 'composite' ? "pts d'excellence" : 'pts'}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Sticky Bottom Bar: Player's Standing & Fast Action */}
-      {userEntry && (
-        <div className="shrink-0 pt-2 border-t border-clay-border/70">
-          <div className="p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-creme-100 border border-amber-200 shadow-sm flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              {userAvatar && (
-                <div className="w-10 h-10 rounded-xl bg-white border border-amber-300 flex items-center justify-center text-xl shrink-0 shadow-xs">
-                  {userAvatar.emoji}
-                </div>
-              )}
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-display font-extrabold text-clay text-sm truncate">
-                    {userEntry.user.pseudo}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white font-display font-extrabold text-xs">
-                    Rang #{userEntry.rank}
-                  </span>
-                </div>
-                <div className="text-[11px] text-clay-muted font-medium truncate">
-                  {userEntry.excellenceScore.toLocaleString('fr-FR')} pts • {userEntry.masteredCount}/101 départements acquis
-                </div>
-              </div>
-            </div>
-
-            {onStartGame && (
-              <button
-                onClick={() => {
-                  soundManager.playClick(480);
-                  onStartGame();
-                }}
-                className="px-3.5 py-2 rounded-xl bg-terracotta hover:bg-terracotta-dark text-white font-display font-bold text-xs shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer"
-              >
-                <span>Grimper au classement</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
