@@ -85,7 +85,7 @@ export const REGIONS: Record<string, Region> = {
     code: '76',
     name: 'Occitanie',
     prefecture: 'Toulouse',
-    departments: ['09', '11', '12', '30', '31', '32', '34', '46', '48', '65', '66', '81'],
+    departments: ['09', '11', '12', '30', '31', '32', '34', '46', '48', '65', '66', '81', '82'],
     description: 'Région bivalente entre le bassin aéronautique toulousain et l\'arc méditerranéen montpelliérain à forte croissance démographique. Barrière pyrénéenne et plateau des Causses marqués par le pastoralisme.',
     color: '#ea580c', // Orange
   },

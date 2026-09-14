@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PlayerStats } from '../../types/geo';
 import { soundManager } from '../../lib/audio';
 import { getRankForXp } from '../../lib/storage';
 import { useAuth } from '../../lib/authContext';
 import { getAvatarById } from '../../data/avatars';
-import { Compass, Flame, Volume2, VolumeX, User, Map, Trophy, MapPin } from 'lucide-react';
+import { Crosshair, Flame, Map, Trophy, User, Volume2, VolumeX } from 'lucide-react';
 
 interface AppHeaderProps {
   stats: PlayerStats;
@@ -34,11 +34,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
   useEffect(() => {
     setSoundEnabled(soundManager.isEnabled());
-    const onProfileUpdate = () => {
-      // Re-trigger re-render
-    };
-    window.addEventListener('geo_io_profile_updated', onProfileUpdate);
-    return () => window.removeEventListener('geo_io_profile_updated', onProfileUpdate);
   }, []);
 
   const toggleSound = () => {
@@ -49,42 +44,49 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-clay-border/70 bg-white/90 backdrop-blur-md shrink-0">
-      <div className="max-w-5xl mx-auto px-2 sm:px-6 h-14 flex items-center justify-between gap-1.5 sm:gap-4">
+    <header className="sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
+      <div className="mx-auto flex h-[3.75rem] max-w-5xl items-center justify-between gap-1.5 px-2 sm:px-5">
         {/* Brand & Logo */}
         <button
           onClick={() => {
             soundManager.playClick(400);
             onResetToHome();
           }}
-          className="flex items-center gap-1.5 sm:gap-2 text-left cursor-pointer group shrink-0"
+          className="group flex shrink-0 items-center rounded-lg px-1 py-1 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-terracotta/40"
+          title="Retour à l'accueil"
+          aria-label="Geo.io — retour à l'accueil"
         >
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta group-hover:bg-terracotta group-hover:text-white transition-colors duration-150">
-            <Compass className="w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
           <div>
-            <span className="font-display font-extrabold text-base sm:text-lg tracking-tight text-clay">
+            <span className="font-display text-lg font-extrabold tracking-[-0.04em] text-clay transition-colors group-hover:text-terracotta-dark sm:text-xl">
               Geo<span className="text-terracotta">.io</span>
+            </span>
+            <span className="hidden text-[8px] font-bold uppercase tracking-[0.16em] text-clay-subtle md:block">
+              Géographie
             </span>
           </div>
         </button>
 
         {/* Center Navigation Tabs */}
-        <div className="flex items-center p-0.5 sm:p-1 bg-creme-100/90 rounded-xl border border-clay-border/80 text-xs font-semibold">
+        <nav
+          className="flex items-center gap-0.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1 text-xs font-semibold shadow-inner"
+          aria-label="Navigation principale"
+        >
           <button
             onClick={() => {
               soundManager.playClick(440);
               onTabChange('quiz');
             }}
-            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
+            aria-current={activeTab === 'quiz' ? 'page' : undefined}
+            aria-label="Quiz et défis"
+            title="Quiz et défis"
+            className={`flex h-9 min-w-9 items-center justify-center gap-2 rounded-xl px-2 outline-none transition sm:min-w-10 md:px-3.5 ${
               activeTab === 'quiz'
-                ? 'bg-white text-clay shadow-xs font-bold border border-clay-border/40'
-                : 'text-clay-muted hover:text-clay'
+                ? 'bg-white font-bold text-clay shadow-[0_2px_8px_rgba(92,70,48,0.10)] ring-1 ring-clay-border/60'
+                : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30'
             }`}
           >
-            <Compass className="w-3.5 h-3.5 text-terracotta shrink-0" />
-            <span className="hidden sm:inline">Quiz & Défis</span>
-            <span className="sm:hidden text-[11px]">Quiz</span>
+            <Crosshair className="h-4 w-4 shrink-0 text-terracotta" strokeWidth={2.2} />
+            <span className="hidden md:inline">Quiz & Défis</span>
           </button>
 
           <button
@@ -92,17 +94,19 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(460);
               onTabChange('mastery');
             }}
-            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
+            aria-current={activeTab === 'mastery' ? 'page' : undefined}
+            aria-label="Carte de maîtrise"
+            title="Carte de maîtrise"
+            className={`flex h-9 min-w-9 items-center justify-center gap-2 rounded-xl px-2 outline-none transition sm:min-w-10 md:px-3.5 ${
               activeTab === 'mastery'
-                ? 'bg-white text-clay shadow-xs font-bold border border-clay-border/40'
-                : 'text-clay-muted hover:text-clay'
+                ? 'bg-white font-bold text-clay shadow-[0_2px_8px_rgba(92,70,48,0.10)] ring-1 ring-clay-border/60'
+                : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-sage/30'
             }`}
           >
-            <Map className="w-3.5 h-3.5 text-sage-dark shrink-0" />
-            <span className="hidden sm:inline">Carte de Maîtrise</span>
-            <span className="sm:hidden text-[11px]">Carte</span>
+            <Map className="h-4 w-4 shrink-0 text-sage-dark" strokeWidth={2.2} />
+            <span className="hidden md:inline">Carte de maîtrise</span>
             {masteredCount > 0 && (
-              <span className="ml-0.5 text-[10px] px-1 py-0.2 rounded-full bg-sage-light text-sage-dark font-bold hidden xs:inline">
+              <span className="hidden rounded-full bg-sage-light px-1.5 py-0.5 text-[9px] font-extrabold text-sage-dark lg:inline">
                 {masteredCount}
               </span>
             )}
@@ -113,40 +117,42 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(470);
               onTabChange('ranking');
             }}
-            className={`px-2 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
+            aria-current={activeTab === 'ranking' ? 'page' : undefined}
+            aria-label="Classement de la promotion"
+            title="Classement de la promotion"
+            className={`flex h-9 min-w-9 items-center justify-center gap-2 rounded-xl px-2 outline-none transition sm:min-w-10 md:px-3.5 ${
               activeTab === 'ranking'
-                ? 'bg-white text-clay shadow-xs font-bold border border-clay-border/40'
-                : 'text-clay-muted hover:text-clay'
+                ? 'bg-white font-bold text-clay shadow-[0_2px_8px_rgba(92,70,48,0.10)] ring-1 ring-clay-border/60'
+                : 'text-clay-muted hover:bg-white/60 hover:text-clay focus-visible:ring-2 focus-visible:ring-honey/30'
             }`}
           >
-            <Trophy className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <span className="hidden sm:inline">Classement L1</span>
-            <span className="sm:hidden text-[11px]">Podium</span>
+            <Trophy className="h-4 w-4 shrink-0 text-honey-dark" strokeWidth={2.2} />
+            <span className="hidden md:inline">Classement L1</span>
           </button>
-        </div>
+        </nav>
 
         {/* Right Section: Streak, Level, Sound & Profile */}
-        <div className="flex items-center gap-1 sm:gap-2 text-xs font-medium shrink-0">
+        <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium">
           {/* Daily Streak */}
           <div
-            className="hidden xs:flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-honey-light border border-honey/30 text-honey-dark font-bold cursor-default"
+            className="hidden h-9 items-center gap-1.5 rounded-xl border border-honey/25 bg-honey-light px-2.5 font-bold text-honey-dark lg:flex"
             title={`${stats.streak} jour(s) de suite`}
           >
-            <Flame className="w-3.5 h-3.5 fill-honey text-honey" />
-            <span className="text-[11px] sm:text-xs">{stats.streak} j</span>
+            <Flame className="h-4 w-4 fill-honey text-honey" />
+            <span>{stats.streak} j</span>
           </div>
 
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="p-2 rounded-xl bg-white hover:bg-creme-100 border border-clay-border text-clay-muted hover:text-clay transition cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:h-10 sm:w-10"
             title={soundEnabled ? 'Couper le son' : 'Activer le son'}
             aria-label={soundEnabled ? 'Couper le son' : 'Activer le son'}
           >
             {soundEnabled ? (
-              <Volume2 className="w-4 h-4 text-clay" />
+              <Volume2 className="h-4 w-4 text-clay" strokeWidth={2.1} />
             ) : (
-              <VolumeX className="w-4 h-4 text-clay-subtle" />
+              <VolumeX className="h-4 w-4 text-clay-subtle" strokeWidth={2.1} />
             )}
           </button>
 
@@ -156,36 +162,31 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(500);
               onOpenProfile();
             }}
-            className="flex items-center gap-2 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-white hover:bg-creme-100 border border-clay-border text-clay transition cursor-pointer shadow-2xs"
+            className="flex h-9 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:h-10 sm:px-2.5"
             title="Mon profil et promotion"
+            aria-label="Ouvrir mon profil"
           >
             {userAvatar ? (
-              <span className="text-base sm:text-lg">{userAvatar.emoji}</span>
+              <span className="text-lg leading-none" aria-hidden="true">{userAvatar.emoji}</span>
             ) : (
-              <User className="w-4 h-4 text-clay-muted" />
+              <User className="h-4 w-4 text-clay-muted" />
             )}
 
-            <div className="hidden sm:flex flex-col text-left leading-tight min-w-0 max-w-[100px]">
-              <span className="font-display font-extrabold text-clay text-xs truncate">
+            <div className="hidden min-w-0 max-w-[100px] flex-col text-left leading-tight lg:flex">
+              <span className="truncate font-display text-xs font-extrabold text-clay">
                 {user?.pseudo || 'Mon Profil'}
               </span>
-              <span className="text-[10px] text-terracotta font-mono font-bold">
+              <span className="font-mono text-[9px] font-bold uppercase tracking-wide text-terracotta">
                 Nv. {rankInfo.level}
               </span>
             </div>
-
-            {user?.favoriteDept && (
-              <span className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 font-mono font-bold text-[10px] border border-amber-300">
-                {user.favoriteDept}
-              </span>
-            )}
           </button>
         </div>
       </div>
 
       {/* Subtle Level Progress Line */}
-      <div 
-        className="w-full h-[2px] bg-clay-border/40 overflow-hidden"
+      <div
+        className="h-[2px] w-full overflow-hidden bg-clay-border/35"
         title={`Progression vers le niveau ${rankInfo.level + 1} : ${rankInfo.progressPercent}%`}
       >
         <div
