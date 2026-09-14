@@ -3,7 +3,7 @@
 import React from 'react';
 import { LeaderboardEntry } from '../../types/ranking';
 import { getAvatarById } from '../../data/avatars';
-import { Crown, MapPin } from 'lucide-react';
+import { Crown } from 'lucide-react';
 
 interface PodiumShowcaseProps {
   top3: LeaderboardEntry[];
@@ -43,15 +43,8 @@ export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUse
                 <span className="truncate">{entry.user.pseudo}</span>
                 {isCurrent && <span className="text-[9px] uppercase text-terracotta">Vous</span>}
               </div>
-              <div className="mt-0.5 flex items-center gap-1 text-[10px] text-clay-muted">
-                {entry.user.favoriteDept && (
-                  <span className="inline-flex items-center gap-0.5">
-                    <MapPin className="h-2.5 w-2.5" />
-                    {entry.user.favoriteDept}
-                  </span>
-                )}
-                <span>•</span>
-                <span>{entry.masteredCount}/101 acquis</span>
+              <div className="mt-0.5 text-[10px] text-clay-muted">
+                {entry.masteredCount}/101 acquis
               </div>
               <div className="mt-0.5 font-display text-sm font-extrabold text-clay">
                 {entry.excellenceScore.toLocaleString('fr-FR')} pts

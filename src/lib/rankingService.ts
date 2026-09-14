@@ -21,7 +21,7 @@ export async function fetchLiveLeaderboardEntries(): Promise<{
 
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, pseudo, avatar_id, favorite_dept, university, level, xp, streak, mastered_depts, accuracy, created_at')
+    .select('id, pseudo, avatar_id, level, xp, streak, mastered_depts, accuracy, created_at')
     .limit(100);
 
   if (error) throw error;
@@ -32,8 +32,6 @@ export async function fetchLiveLeaderboardEntries(): Promise<{
         id: profile.id,
         pseudo: profile.pseudo,
         avatarId: profile.avatar_id ?? 'boussole',
-        favoriteDept: profile.favorite_dept ?? '',
-        university: profile.university ?? '',
         level: Number(profile.level ?? 1),
         xp: Number(profile.xp ?? 0),
         streak: Number(profile.streak ?? 0),

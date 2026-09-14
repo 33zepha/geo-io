@@ -7,7 +7,7 @@ import { LeaderboardEntry } from '../../types/ranking';
 import { PodiumShowcase } from './PodiumShowcase';
 import { getAvatarById } from '../../data/avatars';
 import { soundManager } from '../../lib/audio';
-import { MapPin, RefreshCw, Trophy, Users } from 'lucide-react';
+import { RefreshCw, Trophy, Users } from 'lucide-react';
 
 interface LeaderboardData {
   entries: LeaderboardEntry[];
@@ -135,15 +135,6 @@ export const LeaderboardScreen: React.FC = () => {
                             <div className="flex items-center gap-1">
                               <span className="truncate font-display font-bold text-clay">{entry.user.pseudo}</span>
                               {isCurrent && <span className="text-[9px] uppercase text-terracotta">Vous</span>}
-                            </div>
-                            <div className="flex items-center gap-1 truncate text-[10px] text-clay-muted">
-                              {entry.user.favoriteDept && (
-                                <span className="inline-flex items-center gap-0.5">
-                                  <MapPin className="h-2.5 w-2.5" />
-                                  {entry.user.favoriteDept}
-                                </span>
-                              )}
-                              {entry.user.university && <span className="truncate">{entry.user.university}</span>}
                             </div>
                           </div>
                         </div>
