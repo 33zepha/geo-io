@@ -60,9 +60,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             <span className="font-display text-lg font-extrabold tracking-[-0.04em] text-clay transition-colors group-hover:text-terracotta-dark sm:text-xl">
               Geo<span className="text-terracotta">.io</span>
             </span>
-            <span className="hidden text-[8px] font-bold uppercase tracking-[0.16em] text-clay-subtle md:block">
-              Géographie
-            </span>
           </div>
         </button>
 
