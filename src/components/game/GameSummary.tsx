@@ -34,15 +34,15 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
   const incorrectResults = summary.results.filter((r) => !r.isCorrect);
 
   return (
-    <div className="w-full max-w-2xl mx-auto h-full max-h-full flex flex-col justify-center items-center overflow-hidden p-1 select-none">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-2xl select-none flex-col items-stretch justify-start overflow-y-auto p-1 md:items-center md:justify-center md:overflow-hidden">
       {/* Scorecard Box */}
-      <div className="w-full bg-white border border-clay-border/80 rounded-2xl p-4 sm:p-5 shadow-sm text-center flex flex-col justify-between max-h-full overflow-hidden space-y-3">
+      <div className="flex w-full max-h-none flex-col justify-between space-y-3 overflow-visible rounded-2xl border border-clay-border/80 bg-white p-3.5 text-center shadow-sm md:max-h-full md:overflow-hidden md:p-5">
         {/* Grade & Trophy */}
         <div className="space-y-1 shrink-0">
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 320, damping: 18 }} className="mb-1 inline-flex rounded-xl border border-honey/30 bg-honey-light p-2 text-honey-dark">
             <Trophy className="h-6 w-6 fill-honey/20 text-honey" />
           </motion.div>
-          <h1 className="text-lg sm:text-xl font-extrabold text-clay font-display leading-tight">
+          <h1 className="font-display text-lg font-extrabold leading-tight text-clay md:text-xl">
             {summary.grade}
           </h1>
           <p className="text-xs text-clay-muted">
@@ -102,7 +102,7 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
                   className="bg-creme-50 border border-clay-border/70 rounded-xl p-2.5 text-xs space-y-1"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-clay truncate">{r.title}</span>
+                    <span className="min-w-0 break-words text-left font-bold text-clay">{r.title}</span>
                     <span className="font-mono text-[10px] font-bold text-terracotta bg-terracotta-light px-1.5 py-0.2 rounded border border-terracotta/20 shrink-0">
                       {r.targetCode}
                     </span>
@@ -127,13 +127,13 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-2.5 pt-1 shrink-0 border-t border-clay-border/40">
+        <div className="sticky bottom-0 flex shrink-0 items-center justify-center gap-2.5 border-t border-clay-border/40 bg-white pt-2 md:static md:pt-1">
           <button
             onClick={() => {
               soundManager.playClick(500);
               onReplay();
             }}
-            className="btn-3d flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta px-5 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover"
+            className="btn-3d flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta px-5 py-2.5 text-xs font-bold text-white transition hover:bg-terracotta-hover md:min-h-0"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Rejouer</span>
@@ -144,7 +144,7 @@ export const GameSummary: React.FC<GameSummaryProps> = ({
               soundManager.playClick(440);
               onBackToMenu();
             }}
-            className="pressable flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-white px-5 py-2.5 text-xs font-bold text-clay transition hover:bg-creme-50"
+            className="pressable flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-white px-5 py-2.5 text-xs font-bold text-clay transition hover:bg-creme-50 md:min-h-0"
           >
             <Settings2 className="w-3.5 h-3.5 text-clay-muted" />
             <span>Changer de mode</span>

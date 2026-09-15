@@ -140,7 +140,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in md:items-center md:p-4">
       <button
         type="button"
         className="absolute inset-0 cursor-default"
@@ -152,7 +152,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       />
 
       <div
-        className="panel-enter relative z-10 flex max-h-[min(92dvh,42rem)] w-full max-w-none sm:max-w-[min(100%,35rem)] flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl"
+        className="panel-enter safe-bottom relative z-10 flex max-h-[min(92dvh,42rem)] w-full max-w-none flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg md:max-w-[min(100%,35rem)] md:rounded-3xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Top bar */}
@@ -161,7 +161,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <button
               type="button"
               onClick={handleCancelEdit}
-              className="pressable flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-bold text-clay-muted transition hover:bg-creme-100 hover:text-clay"
+              className="pressable flex min-h-11 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-bold text-clay-muted transition hover:bg-creme-100 hover:text-clay md:min-h-0"
             >
               <ArrowLeft className="h-4 w-4" />
               Retour
@@ -178,7 +178,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               soundManager.playClick(400);
               onClose();
             }}
-            className="pressable rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay"
+            className="pressable touch-target rounded-xl bg-creme-100 p-2 text-clay-muted transition hover:bg-creme-200 hover:text-clay md:min-h-0 md:min-w-0"
             title="Fermer"
             aria-label="Fermer"
           >
@@ -245,7 +245,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         ) : (
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 scrollbar-thin sm:px-5">
             {/* Hero identity */}
-            <section className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-left">
+            <section className="flex flex-col items-center text-center md:flex-row md:items-center md:gap-4 md:text-left">
               <div className="relative shrink-0">
                 <div className={`h-20 w-20 rounded-[1.35rem] p-[3px] shadow-soft ${competition?.rewards.some((reward) => reward.id === 'weekly-frame' && reward.unlocked) ? 'bg-gradient-to-br from-lagon via-honey to-terracotta' : 'bg-gradient-to-br from-honey via-terracotta to-terracotta-dark'}`}>
                   <div className="flex h-full w-full items-center justify-center rounded-[1.15rem] bg-white text-4xl shadow-inner">
@@ -257,8 +257,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
               </div>
 
-              <div className="mt-3 min-w-0 flex-1 sm:mt-0">
-                <div className="mb-1 flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
+              <div className="mt-3 min-w-0 flex-1 md:mt-0">
+                <div className="mb-1 flex flex-wrap items-center justify-center gap-1.5 md:justify-start">
                   <span className="font-display text-[10px] font-extrabold uppercase tracking-[0.14em] text-terracotta">
                     {activeAvatar.title}
                   </span>
@@ -285,7 +285,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </div>
                 )}
 
-                <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 sm:justify-start">
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 md:justify-start">
                   {user?.university && (
                     <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-clay-border bg-creme-100 px-2 py-0.5 text-[10px] font-semibold text-clay">
                       <GraduationCap className="h-3 w-3 shrink-0 text-clay-muted" />
@@ -298,7 +298,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
               </div>
 
-              <div className="mt-3 flex shrink-0 items-center gap-2 sm:mt-0 sm:flex-col sm:items-stretch">
+              <div className="mt-3 flex shrink-0 items-center gap-2 md:mt-0 md:flex-col md:items-stretch">
                 {isAuthenticated ? (
                   <>
                     <button
@@ -307,7 +307,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         soundManager.playClick(420);
                         setIsEditing(true);
                       }}
-                      className="pressable inline-flex items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-creme-100 px-3 py-2 text-xs font-bold text-clay transition hover:bg-creme-200"
+                      className="pressable inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-creme-100 px-3 py-2 text-xs font-bold text-clay transition hover:bg-creme-200 md:min-h-0"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                       Modifier
@@ -319,7 +319,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         await signOut();
                         onClose();
                       }}
-                      className="pressable inline-flex items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-white px-3 py-2 text-xs font-bold text-clay-muted transition hover:border-coral/30 hover:bg-coral-light hover:text-coral-dark"
+                      className="pressable inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-clay-border bg-white px-3 py-2 text-xs font-bold text-clay-muted transition hover:border-coral/30 hover:bg-coral-light hover:text-coral-dark md:min-h-0"
                       title="Se déconnecter"
                     >
                       <LogOut className="h-3.5 w-3.5" />
@@ -334,7 +334,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         soundManager.playClick(460);
                         onOpenAuth();
                       }}
-                      className="btn-3d inline-flex items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta px-3 py-2 text-xs font-bold text-white"
+                      className="btn-3d inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-b-terracotta-dark bg-terracotta px-3 py-2 text-xs font-bold text-white md:min-h-0"
                     >
                       <LogIn className="h-3.5 w-3.5" />
                       Connexion

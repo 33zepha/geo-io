@@ -31,6 +31,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [results, setResults] = useState<RoundResult[]>([]);
+  const [mobilePane, setMobilePane] = useState<'clues' | 'map'>('clues');
 
   const currentEnquete = enquetes[currentIndex];
 
@@ -97,6 +98,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
       setRevealedCluesCount(1);
       setFeedback(null);
       setIsAnswered(false);
+      setMobilePane('clues');
     }
   }, [currentIndex, enquetes.length, results, onFinishGame]);
 
@@ -115,9 +117,9 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
   if (!currentEnquete) return null;
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain sm:gap-3 md:overflow-hidden">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden md:gap-3">
       {/* Top HUD */}
-      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
+      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-3 py-2.5 shadow-sm md:px-5 md:py-3">
         <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => {
@@ -130,13 +132,13 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
             <X className="w-4 h-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay sm:text-base">
+            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay md:text-base">
               Enquête #{currentIndex + 1} : Trouve le territoire mystère
             </h2>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3 text-xs font-bold text-clay">
+        <div className="flex shrink-0 flex-col items-end gap-0.5 text-[11px] font-bold text-clay md:flex-row md:items-center md:gap-3 md:text-xs">
           <span className="text-clay-muted">
             {currentIndex + 1} / {enquetes.length}
           </span>
@@ -144,10 +146,29 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
         </div>
       </div>
 
+      <div className="grid shrink-0 grid-cols-2 rounded-xl border border-clay-border bg-creme-100 p-1 text-xs font-bold md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobilePane('clues')}
+          aria-pressed={mobilePane === 'clues'}
+          className={`min-h-11 rounded-lg px-3 transition ${mobilePane === 'clues' ? 'bg-white text-clay shadow-xs' : 'text-clay-muted'}`}
+        >
+          Indices ({revealedCluesCount}/{currentEnquete.clues.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobilePane('map')}
+          aria-pressed={mobilePane === 'map'}
+          className={`min-h-11 rounded-lg px-3 transition ${mobilePane === 'map' ? 'bg-white text-terracotta shadow-xs' : 'text-clay-muted'}`}
+        >
+          Carte
+        </button>
+      </div>
+
       {/* Middle Stage: Split Clues (left) & Map (right) */}
-      <div className="grid min-h-[35rem] flex-1 grid-cols-1 grid-rows-[minmax(15rem,2fr)_minmax(19rem,3fr)] gap-2.5 md:min-h-0 md:grid-cols-5 md:grid-rows-1 md:gap-3">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-1 gap-2.5 md:grid-cols-5 md:gap-3">
         {/* Clues Card (Left 2 cols) */}
-        <div className="flex min-h-0 flex-col gap-2.5 overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3.5 shadow-sm md:col-span-2 md:max-h-none sm:p-4">
+        <div className={`${mobilePane === 'clues' ? 'flex' : 'hidden'} min-h-0 flex-col gap-2.5 overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3 shadow-sm md:col-span-2 md:flex md:max-h-none md:p-4`}>
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-clay-border/60 pb-2.5">
             <span className="text-xs font-bold text-clay">
               Indices ({revealedCluesCount}/{currentEnquete.clues.length})
@@ -161,6 +182,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
                     soundManager.playClick(380);
                     setFeedback({ code: currentEnquete.targetCode, isCorrect: false });
                     setIsAnswered(true);
+                    setMobilePane('map');
                     setRevealedCluesCount(currentEnquete.clues.length);
                     setResults((prev) => [
                       ...prev,
@@ -217,7 +239,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
         </div>
 
         {/* Map Container (Right 3 cols) */}
-        <div className="relative flex min-h-0 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm md:col-span-3 md:flex-row md:items-center sm:p-2">
+        <div className={`${mobilePane === 'map' ? 'flex' : 'hidden'} relative min-h-0 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm md:col-span-3 md:flex md:flex-row md:items-center md:p-2`}>
           <HeroicFranceMap
             className="min-h-0 w-full flex-1 md:h-full md:max-h-full md:max-w-full"
             interactive={!isAnswered}
@@ -231,7 +253,7 @@ export const ModeEnqueteLogique: React.FC<ModeEnqueteLogiqueProps> = ({
           {isAnswered && (
             <div className="relative z-40 mt-2 w-full shrink-0 md:absolute md:bottom-3 md:left-1/2 md:mt-0 md:w-[min(94%,24rem)] md:-translate-x-1/2">
               <div
-                className={`flex flex-col items-stretch gap-3 rounded-xl border p-3 shadow-md sm:flex-row sm:items-center sm:justify-between ${
+                className={`flex flex-col items-stretch gap-3 rounded-xl border p-3 shadow-md md:flex-row md:items-center md:justify-between ${
                   feedback?.isCorrect
                     ? 'bg-sage-light border-sage/40 text-sage-dark'
                     : 'bg-coral-light border-coral/40 text-coral-dark'

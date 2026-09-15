@@ -94,8 +94,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const isDismissible = !isMandatoryGate && isAuthenticated;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in sm:items-center sm:p-4">
-      <div className="panel-enter relative flex max-h-[min(92dvh,40rem)] w-full max-w-none flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg safe-bottom sm:max-w-md sm:rounded-3xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-clay/55 p-0 backdrop-blur-md animate-fade-in md:items-center md:p-4">
+      <div className="panel-enter relative flex max-h-[min(92dvh,40rem)] w-full max-w-none flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg safe-bottom md:max-w-md md:rounded-3xl">
         {isDismissible && (
           <button
             type="button"

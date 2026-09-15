@@ -156,8 +156,8 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
   if (!currentTarget) return null;
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain sm:gap-3 sm:overflow-hidden">
-      <div className="flex shrink-0 flex-col gap-2.5 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-5 sm:py-3">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain md:gap-3 md:overflow-hidden">
+      <div className="flex shrink-0 flex-col gap-2.5 rounded-2xl border border-clay-border/80 bg-white px-3 py-2.5 shadow-sm md:flex-row md:items-center md:justify-between md:gap-3 md:px-5 md:py-3">
         <div className="flex min-w-0 items-start gap-3">
           <button
             type="button"
@@ -171,7 +171,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
             <X className="h-4 w-4" />
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay sm:text-lg">
+            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay md:text-lg">
               {currentTarget.prompt}
             </h2>
             {currentTarget.subPrompt && (
@@ -182,7 +182,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold text-clay sm:shrink-0 sm:justify-end">
+        <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold text-clay md:shrink-0 md:justify-end">
           {isExpertTimed && !isAnswered && (
             <span
               className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 ${
@@ -213,7 +213,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         </div>
       )}
 
-      <div className="relative flex min-h-[19rem] flex-1 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm sm:min-h-0 sm:flex-row sm:items-center sm:p-3">
+      <div className="relative flex min-h-[15rem] flex-1 flex-col items-stretch justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-1.5 shadow-sm md:min-h-0 md:flex-row md:items-center md:p-3">
         {isExpertTimed && !isAnswered && (
           <div className="absolute inset-x-3 top-12 z-20 h-1.5 overflow-hidden rounded-full bg-creme-200">
             <div
@@ -224,7 +224,7 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         )}
 
         <HeroicFranceMap
-          className="min-h-0 w-full flex-1 sm:h-full sm:max-h-full sm:max-w-full"
+          className="min-h-0 w-full flex-1 md:h-full md:max-h-full md:max-w-full"
           interactive={!isAnswered}
           selectionMode="department"
           targetCode={isAnswered ? currentTarget.code : null}
@@ -235,9 +235,9 @@ export const ModeMapClicker: React.FC<ModeMapClickerProps> = ({
         />
 
         {isAnswered && (
-          <div className="relative z-40 mt-2 w-full shrink-0 sm:absolute sm:bottom-4 sm:left-1/2 sm:mt-0 sm:w-[min(94%,24rem)] sm:-translate-x-1/2">
+          <div className="relative z-40 mt-2 w-full shrink-0 md:absolute md:bottom-4 md:left-1/2 md:mt-0 md:w-[min(94%,24rem)] md:-translate-x-1/2">
             <div
-              className={`flex flex-col items-stretch gap-3 rounded-2xl border p-3.5 shadow-md sm:flex-row sm:items-center sm:justify-between ${
+              className={`flex flex-col items-stretch gap-3 rounded-2xl border p-3.5 shadow-md md:flex-row md:items-center md:justify-between ${
                 feedback?.isCorrect
                   ? 'border-sage/40 bg-sage-light text-sage-dark'
                   : 'border-coral/40 bg-coral-light text-coral-dark'

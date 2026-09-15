@@ -72,14 +72,14 @@ export const AdminPlayerModal: React.FC<AdminPlayerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-clay/40 p-0 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-clay/40 p-0 md:items-center md:p-4">
       <button
         type="button"
         className="absolute inset-0 cursor-pointer"
         aria-label="Fermer"
         onClick={onClose}
       />
-      <div className="relative z-10 flex max-h-[min(92dvh,36rem)] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg sm:rounded-3xl">
+      <div className="relative z-10 flex max-h-[min(92dvh,36rem)] w-full max-w-md flex-col overflow-hidden rounded-t-3xl border-2 border-clay-border bg-white shadow-soft-lg md:rounded-3xl">
         <div className="flex items-center justify-between border-b border-clay-border/70 px-4 py-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-terracotta">
             <Shield className="h-3.5 w-3.5" />

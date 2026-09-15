@@ -68,13 +68,20 @@ const itemVariants: Variants = {
 interface GameHubProps {
   catchUpCodes?: string[] | null;
   onClearCatchUp?: () => void;
+  onPlayingChange?: (isPlaying: boolean) => void;
 }
 
 export const GameHub: React.FC<GameHubProps> = ({
   catchUpCodes,
   onClearCatchUp,
+  onPlayingChange,
 }) => {
   const [screen, setScreen] = useState<'menu' | 'playing' | 'summary'>('menu');
+
+  useEffect(() => {
+    onPlayingChange?.(screen === 'playing');
+    return () => onPlayingChange?.(false);
+  }, [screen, onPlayingChange]);
 
   const [settings, setSettings] = useState<GameSettings>({
     mode: 'clic_carte',
@@ -271,7 +278,7 @@ export const GameHub: React.FC<GameHubProps> = ({
   const sortedRegions = Object.values(REGIONS).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
-    <div className="flex h-full max-h-full w-full flex-col items-stretch justify-start overflow-hidden sm:items-center sm:justify-center">
+    <div className="desktop-game-center flex h-full max-h-full w-full flex-col items-stretch justify-start overflow-hidden md:items-center">
       <AnimatePresence mode="wait">
         {screen === 'menu' && (
           <motion.div 
@@ -280,10 +287,10 @@ export const GameHub: React.FC<GameHubProps> = ({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="mx-auto flex max-h-full w-full max-w-4xl flex-col justify-start space-y-4 overflow-y-auto overscroll-contain px-0.5 scrollbar-thin sm:justify-center sm:space-y-5"
+            className="desktop-game-center mx-auto flex max-h-full w-full max-w-4xl flex-col justify-start space-y-3 overflow-y-auto overscroll-contain px-0.5 pb-1 scrollbar-thin md:space-y-5"
           >
             {/* Header Title */}
-            <motion.div variants={itemVariants} className="text-center">
+            <motion.div variants={itemVariants} className="hidden text-center md:block">
               <h1 className="font-display text-xl font-extrabold tracking-tight text-clay sm:text-2xl">
                 Configuration de partie
               </h1>
@@ -297,7 +304,7 @@ export const GameHub: React.FC<GameHubProps> = ({
             {isCatchUpActive && catchUpCodes && catchUpCodes.length > 0 && (
               <motion.div
                 variants={itemVariants}
-                className="fade-rise flex shrink-0 flex-col gap-2 rounded-xl border border-honey/30 bg-honey-light px-3.5 py-2.5 text-clay shadow-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                className="fade-rise flex shrink-0 flex-col gap-2 rounded-xl border border-honey/30 bg-honey-light px-3.5 py-2.5 text-clay shadow-xs md:flex-row md:items-center md:justify-between md:gap-3"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-honey/40 bg-white text-honey-dark">
@@ -331,7 +338,7 @@ export const GameHub: React.FC<GameHubProps> = ({
             )}
 
             {/* Console Dashboard: 2-Column Grid */}
-            <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 sm:gap-5">
+            <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 md:gap-5">
               {/* Left Column: Mode Selection */}
               <motion.div variants={itemVariants} className="flex flex-col justify-between space-y-2.5">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-clay-muted">
@@ -351,7 +358,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                           if (isLockedByCatchUp) return;
                           setSettings({ ...settings, mode: m.id });
                         }}
-                        className={`pressable flex min-h-[4.5rem] cursor-pointer flex-col justify-center rounded-2xl border p-3.5 text-left transition ${
+                        className={`pressable flex min-h-14 cursor-pointer flex-col justify-center rounded-xl border p-2.5 text-left transition md:min-h-[4.5rem] md:rounded-2xl md:p-3.5 ${
                           isSelected
                             ? 'bg-white border-terracotta border-b-2 border-b-terracotta-dark shadow-xs ring-1 ring-terracotta/20'
                             : 'bg-white/80 border-clay-border hover:bg-white text-clay'
@@ -363,7 +370,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                           }`}>
                             {m.icon}
                           </div>
-                          <span className="font-bold text-xs sm:text-sm text-clay leading-snug">
+                          <span className="font-bold text-xs text-clay leading-snug md:text-sm">
                             {m.title}
                           </span>
                         </div>
@@ -374,7 +381,7 @@ export const GameHub: React.FC<GameHubProps> = ({
               </motion.div>
 
               {/* Right Column: Parameters & Launch */}
-              <motion.div variants={itemVariants} className="flex flex-col justify-between space-y-4">
+              <motion.div variants={itemVariants} className="flex flex-col justify-between space-y-3 md:space-y-4">
                 {/* 2. Périmètre Géographique */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
@@ -500,7 +507,7 @@ export const GameHub: React.FC<GameHubProps> = ({
                   {/* Launch CTA */}
                   <button
                     onClick={startGame}
-                    className="btn-3d flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3.5 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover"
+                    className="btn-3d hidden min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3.5 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover md:flex"
                   >
                     <span>Lancer la partie</span>
                     <ArrowRight className="w-4 h-4" />
@@ -508,6 +515,16 @@ export const GameHub: React.FC<GameHubProps> = ({
                 </div>
               </motion.div>
             </div>
+
+            <motion.div variants={itemVariants} className="sticky bottom-0 z-30 bg-gradient-to-t from-[#FAF7F2] via-[#FAF7F2] to-transparent pt-3 md:hidden">
+              <button
+                onClick={startGame}
+                className="btn-3d flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-b-terracotta-dark bg-terracotta px-4 py-3.5 font-display text-sm font-bold text-white shadow-soft transition hover:bg-terracotta-hover"
+              >
+                <span>Lancer la partie</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </motion.div>
           </motion.div>
         )}
 

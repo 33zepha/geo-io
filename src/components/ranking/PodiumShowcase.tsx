@@ -13,16 +13,16 @@ interface PodiumShowcaseProps {
 }
 
 const rankStyles = [
-  'border-honey/40 bg-honey-light sm:order-2 sm:-translate-y-1 sm:shadow-soft',
-  'border-clay-border bg-creme-100 sm:order-1',
-  'border-terracotta/30 bg-terracotta-light sm:order-3',
+  'border-honey/40 bg-honey-light md:order-2 md:-translate-y-1 md:shadow-soft',
+  'border-clay-border bg-creme-100 md:order-1',
+  'border-terracotta/30 bg-terracotta-light md:order-3',
 ];
 
 export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUserId, onSelect }) => {
   if (top3.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-end">
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-3 md:items-end">
       {top3.map((entry, index) => {
         const avatar = getAvatarById(entry.user.avatarId);
         const isCurrent = entry.user.id === currentUserId;
@@ -47,7 +47,7 @@ export const PodiumShowcase: React.FC<PodiumShowcaseProps> = ({ top3, currentUse
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.06, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className={`flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 ${rankStyles[index]} ${index === 0 ? 'sm:py-3.5' : ''} ${interactive ? 'cursor-pointer transition hover:brightness-[0.98]' : ''}`}
+            className={`flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 ${rankStyles[index]} ${index === 0 ? 'md:py-3.5' : ''} ${interactive ? 'cursor-pointer transition hover:brightness-[0.98]' : ''}`}
           >
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white bg-white text-xl shadow-xs">
               {avatar.emoji}

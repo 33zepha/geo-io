@@ -75,7 +75,7 @@ export const LeaderboardScreen: React.FC = () => {
             <Trophy className="h-3.5 w-3.5" />
             Classement réel de la promo
           </div>
-          <h1 className="truncate font-display text-xl font-extrabold tracking-tight text-clay sm:text-2xl">
+          <h1 className="break-words font-display text-lg font-extrabold leading-tight tracking-tight text-clay md:text-2xl">
             Les meilleurs géographes
           </h1>
         </div>
@@ -94,7 +94,7 @@ export const LeaderboardScreen: React.FC = () => {
               loadData();
             }}
             disabled={isLoading}
-            className="rounded-xl border border-clay-border bg-white p-2 text-clay-muted transition hover:bg-creme-100 hover:text-clay disabled:cursor-wait"
+            className="touch-target rounded-xl border border-clay-border bg-white p-2 text-clay-muted transition hover:bg-creme-100 hover:text-clay disabled:cursor-wait md:min-h-0 md:min-w-0"
             title="Actualiser les profils Supabase"
             aria-label="Actualiser le classement"
           >
@@ -105,8 +105,8 @@ export const LeaderboardScreen: React.FC = () => {
 
       {competitionAvailable && (
         <div className="mt-3 flex shrink-0 rounded-xl border border-clay-border bg-creme-100 p-1 text-xs font-bold">
-          <button type="button" onClick={() => setView('general')} className={`min-h-10 flex-1 rounded-lg px-3 transition ${view === 'general' ? 'bg-white text-clay shadow-xs' : 'text-clay-muted'}`}>Classement général</button>
-          <button type="button" onClick={() => setView('weekly')} className={`min-h-10 flex-1 rounded-lg px-3 transition ${view === 'weekly' ? 'bg-white text-terracotta shadow-xs' : 'text-clay-muted'}`}>Cette semaine · /700</button>
+          <button type="button" onClick={() => setView('general')} className={`min-h-11 flex-1 rounded-lg px-3 transition md:min-h-10 ${view === 'general' ? 'bg-white text-clay shadow-xs' : 'text-clay-muted'}`}>Classement général</button>
+          <button type="button" onClick={() => setView('weekly')} className={`min-h-11 flex-1 rounded-lg px-3 transition md:min-h-10 ${view === 'weekly' ? 'bg-white text-terracotta shadow-xs' : 'text-clay-muted'}`}>Cette semaine · /700</button>
         </div>
       )}
 
@@ -165,9 +165,9 @@ export const LeaderboardScreen: React.FC = () => {
             {data.rest.length > 0 && (
               <div className="overflow-hidden rounded-xl border border-clay-border/80 bg-white">
                 <div className="grid grid-cols-12 border-b border-clay-border/60 bg-creme-100/80 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-clay-muted">
-                  <div className="col-span-2 text-center sm:col-span-1">Rang</div>
-                  <div className="col-span-7 sm:col-span-6">Joueur</div>
-                  <div className="hidden text-center sm:col-span-2 sm:block">Maîtrise</div>
+                  <div className="col-span-2 text-center md:col-span-1">Rang</div>
+                  <div className="col-span-7 md:col-span-6">Joueur</div>
+                  <div className="hidden text-center md:col-span-2 md:block">Maîtrise</div>
                   <div className="col-span-3 text-right">Score</div>
                 </div>
 
@@ -196,10 +196,10 @@ export const LeaderboardScreen: React.FC = () => {
                           isCurrent ? 'bg-honey-light/80' : ''
                         } ${isAdmin ? 'cursor-pointer hover:bg-creme-100/80' : ''}`}
                       >
-                        <div className="col-span-2 text-center font-display font-extrabold text-clay-muted sm:col-span-1">
+                        <div className="col-span-2 text-center font-display font-extrabold text-clay-muted md:col-span-1">
                           #{entry.rank}
                         </div>
-                        <div className="col-span-7 flex min-w-0 items-center gap-2 sm:col-span-6">
+                        <div className="col-span-7 flex min-w-0 items-center gap-2 md:col-span-6">
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-clay-border bg-creme-100 text-base">
                             {avatar.emoji}
                           </div>
@@ -210,7 +210,7 @@ export const LeaderboardScreen: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="hidden text-center text-[11px] text-clay-muted sm:col-span-2 sm:block">
+                        <div className="hidden text-center text-[11px] text-clay-muted md:col-span-2 md:block">
                           {entry.masteredCount}/101
                         </div>
                         <div className="col-span-3 text-right font-display text-sm font-extrabold text-clay">

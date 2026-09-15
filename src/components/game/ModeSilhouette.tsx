@@ -122,9 +122,9 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
   const targetGrammar = getDeptGrammar(currentRound.targetDept.code);
 
   return (
-    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-hidden sm:gap-3">
+    <div className="mx-auto flex h-full max-h-full w-full max-w-4xl select-none flex-col justify-between gap-2.5 overflow-y-auto overscroll-contain md:gap-3 md:overflow-hidden">
       {/* Top HUD */}
-      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3 shadow-sm sm:px-5 sm:py-3">
+      <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border border-clay-border/80 bg-white px-3 py-2.5 shadow-sm md:px-5 md:py-3">
         <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => {
@@ -136,14 +136,14 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="min-w-0">
-            <h2 className="truncate font-display text-sm font-extrabold text-clay sm:text-base">
+          <div className="min-w-0 flex-1">
+            <h2 className="break-words font-display text-sm font-extrabold leading-snug text-clay md:text-base">
               Défi Silhouette : Quel est ce département ?
             </h2>
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3 text-xs font-bold text-clay">
+        <div className="flex shrink-0 flex-col items-end gap-0.5 text-[11px] font-bold text-clay md:flex-row md:items-center md:gap-3 md:text-xs">
           <span className="text-clay-muted">
             {currentIndex + 1} / {rounds.length}
           </span>
@@ -152,8 +152,8 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
       </div>
 
       {/* Main Silhouette Stage */}
-      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-4 shadow-sm sm:p-5">
-        <div className="w-full h-full max-w-xs sm:max-w-sm flex items-center justify-center">
+      <div className="relative flex min-h-[12rem] flex-1 flex-col items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-3 shadow-sm md:min-h-0 md:flex-row md:p-5">
+        <div className="flex min-h-0 w-full max-w-xs flex-1 items-center justify-center md:h-full md:max-w-sm">
           <svg
             viewBox={viewBox}
             className="w-full h-full max-h-full aspect-square filter drop-shadow-md transition-all duration-300"
@@ -184,9 +184,9 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
 
         {/* Floating Answer Feedback & Advance Button inside Stage */}
         {isAnswered && (
-          <div className="absolute bottom-4 left-1/2 z-40 w-[min(94%,28rem)] -translate-x-1/2">
-            <div className="p-3 rounded-xl bg-white/95 backdrop-blur-md border border-clay-border shadow-md flex items-center justify-between gap-3">
-              <div className="max-h-16 overflow-y-auto text-xs font-medium leading-snug text-clay">
+          <div className="relative z-40 mt-2 w-full shrink-0 md:absolute md:bottom-4 md:left-1/2 md:mt-0 md:w-[min(94%,28rem)] md:-translate-x-1/2">
+            <div className="flex flex-col items-stretch justify-between gap-3 rounded-xl border border-clay-border bg-white/95 p-3 shadow-md backdrop-blur-md md:flex-row md:items-center">
+              <div className="break-words text-xs font-medium leading-snug text-clay">
                 💡 {targetGrammar.withArticle} • Chef-lieu : <strong>{currentRound.targetDept.prefecture}</strong> ({currentRound.targetDept.regionName}).
               </div>
               <button
@@ -224,7 +224,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
         )}
         
         </div>
-      <div className="grid shrink-0 grid-cols-2 gap-2.5">{currentRound.options.map((opt, idx) => {
+      <div className="sticky bottom-0 z-30 grid shrink-0 grid-cols-2 gap-2 bg-[#FAF7F2] pb-0.5 md:static md:gap-2.5 md:bg-transparent md:pb-0">{currentRound.options.map((opt, idx) => {
           const optGrammar = getDeptGrammar(opt.code);
           let btnStyle = 'bg-white border border-clay-border border-b-2 hover:border-terracotta/40 hover:bg-creme-50 text-clay active:translate-y-[1px]';
           let badgeStyle = 'bg-creme-100 text-clay-muted border-clay-border';
@@ -252,7 +252,7 @@ export const ModeSilhouette: React.FC<ModeSilhouetteProps> = ({
                 <span className={`w-5 h-5 rounded-md text-[11px] font-mono font-bold flex items-center justify-center border shrink-0 ${badgeStyle}`}>
                   {idx + 1}
                 </span>
-                <span className="text-xs font-semibold leading-snug text-clay sm:text-sm">
+                <span className="break-words text-xs font-semibold leading-snug text-clay md:text-sm">
                   {optGrammar.withArticle}
                 </span>
               </div>

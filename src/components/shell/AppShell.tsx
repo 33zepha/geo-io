@@ -12,6 +12,8 @@ import { AuthModal } from '../auth/AuthModal';
 import { GameHub } from '../game/GameHub';
 import { MasteryMapScreen } from '../mastery/MasteryMapScreen';
 import { LeaderboardScreen } from '../ranking/LeaderboardScreen';
+import { Crosshair, Map, Trophy } from 'lucide-react';
+import { soundManager } from '../../lib/audio';
 
 const InnerAppShell: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -21,6 +23,7 @@ const InnerAppShell: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const [isGamePlaying, setIsGamePlaying] = useState(false);
 
   useEffect(() => {
     setStats(loadPlayerStats());
@@ -33,6 +36,7 @@ const InnerAppShell: React.FC = () => {
   }, []);
 
   const handleResetToHome = () => {
+    setIsGamePlaying(false);
     setActiveTab('quiz');
     setCatchUpCodes(null);
     setResetKey((prev) => prev + 1);
@@ -89,15 +93,17 @@ const InnerAppShell: React.FC = () => {
         stats={stats}
         activeTab={activeTab}
         onTabChange={(tab) => {
+          setIsGamePlaying(false);
           setActiveTab(tab);
           if (tab === 'quiz') setCatchUpCodes(null);
         }}
         onOpenProfile={() => setIsProfileOpen(true)}
         onResetToHome={handleResetToHome}
+        hideMobile={isGamePlaying}
       />
 
       {/* Main Game Arena */}
-      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-4 pb-3 pt-2.5 sm:items-center sm:justify-center sm:px-5 sm:py-4">
+      <main className={`relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-3 pt-2.5 md:items-center md:justify-center md:px-5 md:py-4 ${isGamePlaying ? 'pb-2.5' : 'pb-[4.75rem] md:pb-4'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab === 'quiz' ? `quiz-${resetKey}` : activeTab}
@@ -111,6 +117,7 @@ const InnerAppShell: React.FC = () => {
               <GameHub
                 catchUpCodes={catchUpCodes}
                 onClearCatchUp={() => setCatchUpCodes(null)}
+                onPlayingChange={setIsGamePlaying}
               />
             ) : activeTab === 'mastery' ? (
               <MasteryMapScreen
@@ -124,8 +131,40 @@ const InnerAppShell: React.FC = () => {
         </AnimatePresence>
       </main>
 
+      {!isGamePlaying && (
+        <nav className="safe-bottom safe-x fixed inset-x-0 bottom-0 z-40 border-t border-clay-border/80 bg-white/95 shadow-[0_-6px_24px_rgba(92,70,48,0.08)] backdrop-blur-md md:hidden" aria-label="Navigation principale">
+          <div className="mx-auto grid h-16 max-w-md grid-cols-3 px-2">
+            {([
+              { id: 'quiz' as const, label: 'Jouer', icon: Crosshair, color: 'text-terracotta' },
+              { id: 'mastery' as const, label: 'Maîtrise', icon: Map, color: 'text-sage-dark' },
+              { id: 'ranking' as const, label: 'Classement', icon: Trophy, color: 'text-honey-dark' },
+            ]).map(({ id, label, icon: Icon, color }) => {
+              const selected = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-current={selected ? 'page' : undefined}
+                  onClick={() => {
+                    soundManager.playClick(440);
+                    setActiveTab(id);
+                    if (id === 'quiz') setCatchUpCodes(null);
+                  }}
+                  className={`touch-target flex flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-bold transition ${selected ? 'text-clay' : 'text-clay-muted'}`}
+                >
+                  <span className={`flex h-7 w-12 items-center justify-center rounded-full ${selected ? 'bg-creme-100' : ''}`}>
+                    <Icon className={`h-4 w-4 ${color}`} strokeWidth={2.3} />
+                  </span>
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
+
       {/* Minimal Game Status Bar */}
-      <footer className="w-full h-7 shrink-0 border-t border-clay-border/40 px-4 text-[11px] text-clay-subtle hidden sm:flex items-center justify-between bg-white/40 backdrop-blur-sm relative z-10">
+      <footer className="relative z-10 hidden h-7 w-full shrink-0 items-center justify-between border-t border-clay-border/40 bg-white/40 px-4 text-[11px] text-clay-subtle backdrop-blur-sm md:flex">
         <span>Geo.io • Promotion L1 & Géographie française</span>
         <span>101 départements • Classement réel de la promo</span>
       </footer>

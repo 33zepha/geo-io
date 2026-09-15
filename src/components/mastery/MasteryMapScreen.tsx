@@ -75,10 +75,10 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
   return (
     <div className="mx-auto flex h-full max-h-full w-full max-w-5xl select-none flex-col gap-3 overflow-hidden">
       {/* Top Banner & Control Strip */}
-      <div className="flex shrink-0 flex-col gap-3 rounded-2xl border border-clay-border/80 bg-white px-4 py-3.5 shadow-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:px-5">
-        <div className="flex min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
+      <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-clay-border/80 bg-white px-3 py-2.5 shadow-sm md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3 md:px-5 md:py-3.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 md:gap-3">
           <h1 className="font-display text-base font-extrabold tracking-tight text-clay sm:text-lg">
-            Carte de Maîtrise <span className="hidden text-xs font-normal text-clay-muted sm:inline">(101 départements)</span>
+            Carte de Maîtrise <span className="hidden text-xs font-normal text-clay-muted md:inline">(101 départements)</span>
           </h1>
 
           {/* 4 Status Counters */}
@@ -109,7 +109,7 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
         <button
           type="button"
           onClick={handleLaunchReview}
-          className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-terracotta-hover sm:w-auto"
+          className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-terracotta px-4 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-terracotta-hover md:w-auto"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           <span>
@@ -123,7 +123,7 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
 
       {/* Main Map + Inspector */}
       <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-3">
-        <div className="relative flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2.5 shadow-sm lg:col-span-2 sm:p-3">
+        <div className="relative flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-clay-border/80 bg-white p-2.5 shadow-sm md:p-3 lg:col-span-2">
           <HeroicFranceMap
             className="h-full max-h-full w-full max-w-full"
             interactive={true}
@@ -138,7 +138,7 @@ export const MasteryMapScreen: React.FC<MasteryMapScreenProps> = ({
 
         {/* Desktop side inspector / mobile bottom sheet when selected */}
         <div
-          className={`overflow-y-auto overscroll-contain rounded-t-2xl rounded-b-none border border-clay-border/80 bg-white p-3 shadow-sm safe-bottom sm:rounded-2xl sm:p-4 lg:flex lg:flex-col lg:justify-between ${
+          className={`overflow-y-auto overscroll-contain rounded-t-2xl rounded-b-none border border-clay-border/80 bg-white p-3 shadow-sm safe-bottom md:rounded-2xl md:p-4 lg:flex lg:flex-col lg:justify-between ${
             selectedDept
               ? 'absolute inset-x-0 bottom-0 z-30 max-h-[46%] lg:static lg:max-h-none lg:rounded-2xl'
               : 'hidden lg:flex'

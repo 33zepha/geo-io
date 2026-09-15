@@ -14,6 +14,7 @@ interface AppHeaderProps {
   onTabChange: (tab: 'quiz' | 'mastery' | 'ranking') => void;
   onOpenProfile: () => void;
   onResetToHome: () => void;
+  hideMobile?: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -22,6 +23,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   onTabChange,
   onOpenProfile,
   onResetToHome,
+  hideMobile = false,
 }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const { user } = useAuth();
@@ -44,7 +46,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   return (
-    <header className="safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md">
+    <header className={`safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md ${hideMobile ? 'hidden md:block' : ''}`}>
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-2.5 px-3 py-3 sm:gap-3 sm:px-5 sm:py-3.5">
         {/* Brand & Logo */}
         <button
@@ -52,7 +54,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             soundManager.playClick(400);
             onResetToHome();
           }}
-          className="group flex shrink-0 items-center rounded-xl px-1.5 py-1.5 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-terracotta/40"
+          className="group flex min-h-11 shrink-0 items-center rounded-xl px-1.5 py-1.5 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-terracotta/40 md:min-h-0"
           title="Retour à l'accueil"
           aria-label="Geo.io — retour à l'accueil"
         >
@@ -65,7 +67,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 
         {/* Center Navigation Tabs */}
         <nav
-          className="flex min-w-0 items-center gap-1.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1.5 text-xs font-semibold shadow-inner"
+          className="hidden min-w-0 items-center gap-1.5 rounded-2xl border border-clay-border/80 bg-creme-100/90 p-1.5 text-xs font-semibold shadow-inner md:flex"
           aria-label="Navigation principale"
         >
           <button
@@ -142,7 +144,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30 md:h-11 md:w-11"
+            className="pressable flex h-11 w-11 items-center justify-center rounded-xl border border-clay-border bg-white text-clay-muted outline-none transition hover:border-clay-darkborder hover:bg-creme-100 hover:text-clay focus-visible:ring-2 focus-visible:ring-terracotta/30"
             title={soundEnabled ? 'Couper le son' : 'Activer le son'}
             aria-label={soundEnabled ? 'Couper le son' : 'Activer le son'}
           >
@@ -159,7 +161,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               soundManager.playClick(500);
               onOpenProfile();
             }}
-            className="pressable flex h-10 items-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5 md:h-11"
+            className="pressable flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-clay-border bg-white px-2 text-clay outline-none transition hover:border-terracotta/30 hover:bg-terracotta-light focus-visible:ring-2 focus-visible:ring-terracotta/30 sm:px-2.5"
             title="Mon profil et promotion"
             aria-label="Ouvrir mon profil"
           >

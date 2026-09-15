@@ -662,12 +662,12 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative mx-auto flex max-w-[760px] min-h-0 touch-none select-none flex-col items-stretch justify-start sm:items-center sm:justify-center ${className || 'w-full aspect-square'}`}
+      className={`relative mx-auto flex max-w-[760px] min-h-0 touch-none select-none flex-col items-stretch justify-start md:items-center md:justify-center ${className || 'w-full aspect-square'}`}
       onMouseMove={handleMouseMove}
       onWheel={handleWheel}
     >
       {/* Mobile controls stay in the layout so they never cover the map. */}
-      <div className="relative z-30 mb-2 flex w-full shrink-0 flex-wrap items-center gap-2 rounded-2xl border-2 border-clay-border/80 bg-white/95 p-2 shadow-soft backdrop-blur-md sm:absolute sm:left-3.5 sm:top-3.5 sm:mb-0 sm:w-auto sm:max-w-[calc(100%-1.75rem)]">
+      <div className="relative z-30 mb-2 flex w-full shrink-0 flex-wrap items-center gap-2 rounded-2xl border-2 border-clay-border/80 bg-white/95 p-2 shadow-soft backdrop-blur-md md:absolute md:left-3.5 md:top-3.5 md:mb-0 md:w-auto md:max-w-[calc(100%-1.75rem)]">
         {/* Regional Framing Toggle (if activeRegion provided) */}
         {activeRegion && (
           <button
@@ -731,7 +731,7 @@ export const HeroicFranceMap: React.FC<HeroicFranceMapProps> = ({
       {/* GPU camera: fixed SVG viewBox + CSS translate3d/scale on the stage */}
       <div
         ref={viewportRef}
-        className="relative min-h-0 w-full flex-1 overflow-hidden [contain:strict] sm:absolute sm:inset-0"
+        className="relative min-h-0 w-full flex-1 overflow-hidden [contain:strict] md:absolute md:inset-0"
       >
         <div
           ref={stageRef}
