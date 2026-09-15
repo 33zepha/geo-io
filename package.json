@@ -1,5 +1,6 @@
 {
   "name": "geo-io",
+  "description": "Plateforme ludique d'apprentissage de la géographie française pour étudiants : quiz, défis et classement compétitif.",
   "version": "0.1.0",
   "private": true,
   "scripts": {
