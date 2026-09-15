@@ -46,7 +46,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   };
 
   return (
-    <header className={`safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white/95 shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md ${hideMobile ? 'hidden md:block' : ''}`}>
+    <header className={`safe-top sticky top-0 z-40 w-full shrink-0 border-b border-clay-border/70 bg-white shadow-[0_4px_18px_rgba(92,70,48,0.04)] backdrop-blur-md md:bg-white/95 ${hideMobile ? 'hidden md:block' : ''}`}>
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-2.5 px-3 py-3 sm:gap-3 sm:px-5 sm:py-3.5">
         {/* Brand & Logo */}
         <button

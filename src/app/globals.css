@@ -160,6 +160,14 @@
 }
 
 @media (max-width: 767px) {
+  html {
+    background-color: #ffffff;
+  }
+
+  body {
+    background-color: #faf7f2;
+  }
+
   input,
   select,
   textarea {

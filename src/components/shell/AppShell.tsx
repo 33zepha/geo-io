@@ -103,7 +103,7 @@ const InnerAppShell: React.FC = () => {
       />
 
       {/* Main Game Arena */}
-      <main className={`relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-3 pt-2.5 md:items-center md:justify-center md:px-5 md:py-4 ${isGamePlaying ? 'pb-2.5' : 'pb-[4.75rem] md:pb-4'}`}>
+      <main className={`relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col items-stretch justify-start overflow-hidden px-3 pt-2.5 md:items-center md:justify-center md:px-5 md:py-4 ${isGamePlaying ? 'pb-2.5' : 'pb-[5.25rem] md:pb-4'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab === 'quiz' ? `quiz-${resetKey}` : activeTab}
@@ -132,10 +132,10 @@ const InnerAppShell: React.FC = () => {
       </main>
 
       {!isGamePlaying && (
-        <nav className="safe-bottom safe-x fixed inset-x-0 bottom-0 z-40 border-t border-clay-border/80 bg-white/95 shadow-[0_-6px_24px_rgba(92,70,48,0.08)] backdrop-blur-md md:hidden" aria-label="Navigation principale">
-          <div className="mx-auto grid h-16 max-w-md grid-cols-3 px-2">
+        <nav className="safe-x pointer-events-none fixed inset-x-0 bottom-0 z-40 px-2 pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)] md:hidden" aria-label="Navigation principale">
+          <div className="pointer-events-auto mx-auto flex w-fit items-center gap-1.5 rounded-2xl border border-clay-border/80 bg-creme-100/95 p-1.5 shadow-[0_8px_28px_rgba(92,70,48,0.16)] backdrop-blur-md">
             {([
-              { id: 'quiz' as const, label: 'Jouer', icon: Crosshair, color: 'text-terracotta' },
+              { id: 'quiz' as const, label: 'Quiz & défis', icon: Crosshair, color: 'text-terracotta' },
               { id: 'mastery' as const, label: 'Maîtrise', icon: Map, color: 'text-sage-dark' },
               { id: 'ranking' as const, label: 'Classement', icon: Trophy, color: 'text-honey-dark' },
             ]).map(({ id, label, icon: Icon, color }) => {
@@ -145,17 +145,16 @@ const InnerAppShell: React.FC = () => {
                   key={id}
                   type="button"
                   aria-current={selected ? 'page' : undefined}
+                  aria-label={label}
+                  title={label}
                   onClick={() => {
                     soundManager.playClick(440);
                     setActiveTab(id);
                     if (id === 'quiz') setCatchUpCodes(null);
                   }}
-                  className={`touch-target flex flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-bold transition ${selected ? 'text-clay' : 'text-clay-muted'}`}
+                  className={`pressable flex h-11 w-11 items-center justify-center rounded-xl border outline-none transition-all duration-200 ${selected ? 'border-clay-border/60 bg-white text-clay shadow-xs ring-1 ring-clay-border/50' : 'border-transparent text-clay-muted hover:bg-white/60 hover:text-clay'}`}
                 >
-                  <span className={`flex h-7 w-12 items-center justify-center rounded-full ${selected ? 'bg-creme-100' : ''}`}>
-                    <Icon className={`h-4 w-4 ${color}`} strokeWidth={2.3} />
-                  </span>
-                  <span>{label}</span>
+                  <Icon className={`h-4 w-4 shrink-0 ${color}`} strokeWidth={2.2} />
                 </button>
               );
             })}
